@@ -1,1371 +1,703 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PowerFit Gym</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* ============================================
-           CSS VARIABLES & RESET
-           ============================================ */
-        :root {
-            --primary: #ff4d00;
-            --primary-dark: #cc3d00;
-            --primary-light: #ff6a2f;
-            --secondary: #1a1a2e;
-            --secondary-light: #16213e;
-            --accent: #0f3460;
-            --dark: #0a0a0a;
-            --dark-2: #141414;
-            --dark-3: #1e1e1e;
-            --dark-4: #2a2a2a;
-            --light: #ffffff;
-            --light-2: #f0f0f0;
-            --light-3: #cccccc;
-            --gray: #888888;
-            --success: #00c853;
-            --danger: #ff1744;
-            --warning: #ffc107;
-            --info: #2196f3;
-            --gradient-1: linear-gradient(135deg, #ff4d00, #ff8c00);
-            --shadow-sm: 0 2px 10px rgba(0,0,0,0.3);
-            --shadow-md: 0 5px 20px rgba(0,0,0,0.4);
-            --shadow-lg: 0 10px 40px rgba(0,0,0,0.5);
-            --shadow-glow: 0 0 20px rgba(255,77,0,0.3);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 20px;
-            --radius-xl: 30px;
-            --transition: all 0.3s ease;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Power Readings</title>
+<!-- Firebase compat SDKs — must load first -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; font-size: 14px; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--dark);
-            color: var(--light);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-        a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--dark-2); }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+/* ── LOGIN PAGE ─────────────────────────────────────────────── */
+#login-page {
+  display: flex; min-height: 100vh;
+  background: linear-gradient(135deg, #0d2d6e 0%, #1a56a0 50%, #0d2d6e 100%);
+  align-items: center; justify-content: center;
+}
+.login-box {
+  background: white; border-radius: 12px; padding: 40px 36px;
+  width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-logo {
+  text-align: center; margin-bottom: 28px;
+}
+.login-logo .icon { font-size: 2.8rem; display: block; margin-bottom: 8px; }
+.login-logo h2 { font-size: 1.3rem; color: #1a56a0; font-weight: 700; letter-spacing: 1px; }
+.login-logo p { font-size: 0.8rem; color: #888; margin-top: 4px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #444; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.login-field input {
+  width: 100%; border: 1.5px solid #ddd; border-radius: 7px;
+  padding: 10px 14px; font-size: 0.95rem; transition: border 0.2s;
+}
+.login-field input:focus { outline: none; border-color: #1a56a0; }
+.login-btn {
+  width: 100%; background: linear-gradient(135deg, #1a56a0, #0d2d6e);
+  color: white; border: none; border-radius: 7px; padding: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px;
+  letter-spacing: 0.5px; transition: opacity 0.2s;
+}
+.login-btn:hover { opacity: 0.9; }
+.login-err { color: #c0392b; font-size: 0.82rem; margin-top: 10px; text-align: center; display: none; }
+.remember-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.82rem; color: #555; }
+.remember-row input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
+.login-divider { text-align: center; color: #bbb; font-size: 0.78rem; margin: 14px 0 10px; }
 
-        /* Page containers */
-        .page { display: none; }
-        .page.active { display: block; }
+/* ── MAIN APP ────────────────────────────────────────────────── */
+#app-page { display: none; }
+header { background: #1a56a0; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+header h1 { font-size: 1.1rem; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.user-info { font-size: 0.8rem; opacity: 0.85; }
+.logout-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 4px; padding: 4px 12px; cursor: pointer; font-size: 0.8rem; }
+.logout-btn:hover { background: rgba(255,255,255,0.25); }
 
-        /* ============================================
-           LOADING
-           ============================================ */
-        .loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--dark); display: flex; justify-content: center;
-            align-items: center; z-index: 99999; transition: opacity 0.5s;
-        }
-        .loading-screen.hide { opacity: 0; pointer-events: none; }
-        .loader {
-            width: 60px; height: 60px; border: 4px solid var(--dark-4);
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ============================================
-           NAVBAR (Landing)
-           ============================================ */
-        .navbar {
-            position: fixed; top: 0; left: 0; width: 100%; padding: 15px 5%;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000; transition: var(--transition); background: transparent;
-        }
-        .navbar.scrolled {
-            background: rgba(10,10,10,0.95); backdrop-filter: blur(20px);
-            box-shadow: var(--shadow-md); padding: 10px 5%;
-        }
-        .nav-logo {
-            display: flex; align-items: center; gap: 10px; font-size: 1.8rem;
-            font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px;
-        }
-        .nav-links {
-            display: flex; gap: 30px; align-items: center;
-        }
-        .nav-links a {
-            color: var(--light); font-weight: 500; position: relative;
-            transition: var(--transition); font-size: 0.95rem;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .nav-links a:hover { color: var(--primary); }
-        .nav-links a::after {
-            content: ''; position: absolute; bottom: -5px; left: 0;
-            width: 0; height: 2px; background: var(--primary); transition: var(--transition);
-        }
-        .nav-links a:hover::after { width: 100%; }
-        .nav-btn {
-            padding: 10px 25px !important; background: var(--gradient-1) !important;
-            border-radius: var(--radius-xl) !important; font-weight: 600 !important;
-            cursor: pointer; border: none;
-        }
-        .nav-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-glow); }
-        .nav-btn::after { display: none !important; }
-        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; z-index: 1001; }
-        .hamburger span { width: 28px; height: 3px; background: var(--light); border-radius: 5px; transition: var(--transition); }
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px,6px); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px,-6px); }
-
-        /* ============================================
-           HERO
-           ============================================ */
-        .hero {
-            height: 100vh; display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            background: linear-gradient(135deg, rgba(10,10,10,0.9), rgba(26,26,46,0.8)),
-                        url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920') center/cover;
-        }
-        .hero-content { text-align: center; z-index: 2; padding: 0 20px; max-width: 900px; }
-        .hero-badge {
-            display: inline-block; padding: 8px 20px; background: rgba(255,77,0,0.15);
-            border: 1px solid var(--primary); border-radius: var(--radius-xl);
-            color: var(--primary); font-size: 0.85rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;
-            animation: fadeInDown 1s ease;
-        }
-        .hero h1 {
-            font-size: 4rem; font-weight: 900; line-height: 1.1;
-            margin-bottom: 20px; text-transform: uppercase; animation: fadeInUp 1s ease;
-        }
-        .hero h1 span {
-            background: var(--gradient-1); -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .hero p { font-size: 1.2rem; color: var(--light-3); margin-bottom: 40px; animation: fadeInUp 1s ease 0.2s both; }
-        .hero-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 1s ease 0.4s both; }
-        .scroll-indicator { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite; }
-        .scroll-indicator i { font-size: 1.5rem; color: var(--primary); }
-        @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-10px)} }
-
-        /* ============================================
-           BUTTONS
-           ============================================ */
-        .btn-primary {
-            padding: 15px 35px; background: var(--gradient-1); color: var(--light);
-            border: none; border-radius: var(--radius-xl); font-size: 1rem; font-weight: 700;
-            cursor: pointer; transition: var(--transition); text-transform: uppercase;
-            letter-spacing: 1px; display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: var(--shadow-glow); }
-        .btn-secondary {
-            padding: 15px 35px; background: transparent; color: var(--light);
-            border: 2px solid var(--light-3); border-radius: var(--radius-xl); font-size: 1rem;
-            font-weight: 700; cursor: pointer; transition: var(--transition);
-            text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 8px;
-        }
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-3px); }
-
-        /* ============================================
-           STATS BAR
-           ============================================ */
-        .stats-bar { display: flex; justify-content: center; gap: 60px; padding: 50px 5%; background: var(--dark-2); flex-wrap: wrap; }
-        .stat-item { text-align: center; }
-        .stat-number { font-size: 2.8rem; font-weight: 900; color: var(--primary); display: block; }
-        .stat-label { color: var(--light-3); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
-
-        /* ============================================
-           SECTIONS
-           ============================================ */
-        .section { padding: 100px 5%; }
-        .section-header { text-align: center; margin-bottom: 60px; }
-        .section-badge {
-            display: inline-block; padding: 6px 18px; background: rgba(255,77,0,0.15);
-            border: 1px solid rgba(255,77,0,0.3); border-radius: var(--radius-xl);
-            color: var(--primary); font-size: 0.8rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;
-        }
-        .section-header h2 { font-size: 2.8rem; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; }
-        .section-header h2 span { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .section-header p { color: var(--light-3); font-size: 1.1rem; max-width: 600px; margin: 0 auto; }
-
-        /* About */
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; max-width: 1200px; margin: 0 auto; }
-        .about-image { position: relative; border-radius: var(--radius-lg); overflow: hidden; }
-        .about-image img { width: 100%; height: 500px; object-fit: cover; border-radius: var(--radius-lg); }
-        .experience-badge {
-            position: absolute; bottom: 20px; right: 20px; background: var(--gradient-1);
-            padding: 20px 25px; border-radius: var(--radius-md); text-align: center;
-        }
-        .experience-badge .number { font-size: 2.5rem; font-weight: 900; display: block; line-height: 1; }
-        .experience-badge .text { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .about-content h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; text-transform: uppercase; }
-        .about-content h2 span { background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .about-content p { color: var(--light-3); margin-bottom: 30px; font-size: 1.05rem; }
-        .about-features { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        .about-feature { display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: var(--dark-3); border-radius: var(--radius-sm); transition: var(--transition); }
-        .about-feature:hover { background: var(--dark-4); transform: translateX(5px); }
-        .about-feature i { color: var(--primary); font-size: 1.2rem; }
-        .about-feature span { font-weight: 500; font-size: 0.95rem; }
-
-        /* Programs */
-        .programs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
-        .program-card {
-            background: var(--dark-2); border-radius: var(--radius-md); padding: 40px 30px;
-            text-align: center; transition: var(--transition); border: 1px solid var(--dark-4);
-            position: relative; overflow: hidden;
-        }
-        .program-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:3px; background:var(--gradient-1); transform:scaleX(0); transition:var(--transition); }
-        .program-card:hover::before { transform: scaleX(1); }
-        .program-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); border-color: rgba(255,77,0,0.2); }
-        .program-icon { width: 70px; height: 70px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 1.8rem; }
-        .program-card h3 { font-size: 1.3rem; margin-bottom: 15px; text-transform: uppercase; }
-        .program-card p { color: var(--light-3); font-size: 0.95rem; }
-
-        /* Trainers */
-        .trainers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 25px; max-width: 1200px; margin: 0 auto; }
-        .trainer-card { background: var(--dark-2); border-radius: var(--radius-md); overflow: hidden; transition: var(--transition); border: 1px solid var(--dark-4); }
-        .trainer-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
-        .trainer-image { height: 300px; overflow: hidden; }
-        .trainer-image img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition); }
-        .trainer-card:hover .trainer-image img { transform: scale(1.1); }
-        .trainer-info { padding: 20px; text-align: center; }
-        .trainer-info h3 { font-size: 1.2rem; margin-bottom: 5px; }
-        .trainer-info .specialty { color: var(--primary); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Pricing */
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 25px; max-width: 1000px; margin: 0 auto; }
-        .pricing-card {
-            background: var(--dark-2); border-radius: var(--radius-md); padding: 40px 30px;
-            text-align: center; border: 1px solid var(--dark-4); transition: var(--transition); position: relative;
-        }
-        .pricing-card.featured { border-color: var(--primary); transform: scale(1.05); }
-        .pricing-card.featured .popular-badge {
-            position: absolute; top: -1px; right: 20px; background: var(--gradient-1);
-            padding: 5px 15px; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .pricing-card:hover { transform: translateY(-10px); box-shadow: var(--shadow-lg); }
-        .pricing-card.featured:hover { transform: scale(1.05) translateY(-10px); }
-        .pricing-card h3 { font-size: 1.3rem; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        .price { font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 20px 0; }
-        .price span { font-size: 1rem; color: var(--light-3); font-weight: 400; }
-        .pricing-features { margin: 25px 0; }
-        .pricing-features li { padding: 10px 0; color: var(--light-3); border-bottom: 1px solid var(--dark-4); display: flex; align-items: center; gap: 10px; justify-content: center; }
-        .pricing-features li i.fa-check { color: var(--success); }
-        .pricing-features li i.fa-xmark { color: var(--danger); }
-
-        /* Contact */
-        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1100px; margin: 0 auto; }
-        .contact-info-item { display: flex; align-items: center; gap: 15px; padding: 20px; background: var(--dark-2); border-radius: var(--radius-md); border: 1px solid var(--dark-4); margin-bottom: 15px; }
-        .contact-info-item i { width: 50px; height: 50px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
-        .contact-info-item h4 { font-size: 1rem; margin-bottom: 3px; }
-        .contact-info-item p { color: var(--light-3); font-size: 0.9rem; }
-        .contact-form { background: var(--dark-2); border-radius: var(--radius-md); padding: 35px; border: 1px solid var(--dark-4); }
-        .contact-form h3 { font-size: 1.5rem; margin-bottom: 25px; }
-
-        /* Footer */
-        .footer { background: var(--dark-2); padding: 60px 5% 30px; border-top: 1px solid var(--dark-4); }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; max-width: 1200px; margin: 0 auto 40px; }
-        .footer-col h3 { font-size: 1.2rem; margin-bottom: 20px; text-transform: uppercase; }
-        .footer-col h3 span { color: var(--primary); }
-        .footer-col p { color: var(--light-3); font-size: 0.95rem; line-height: 1.8; }
-        .footer-col ul li { margin-bottom: 10px; }
-        .footer-col ul li a { color: var(--light-3); transition: var(--transition); }
-        .footer-col ul li a:hover { color: var(--primary); padding-left: 5px; }
-        .footer-social { display: flex; gap: 10px; margin-top: 20px; }
-        .footer-social a { width: 40px; height: 40px; background: var(--dark-4); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-        .footer-social a:hover { background: var(--primary); transform: translateY(-3px); }
-        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid var(--dark-4); color: var(--gray); font-size: 0.9rem; }
-
-        /* ============================================
-           FORM ELEMENTS
-           ============================================ */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: var(--light-3); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 12px 15px; background: var(--dark-3);
-            border: 1px solid var(--dark-4); border-radius: var(--radius-sm);
-            color: var(--light); font-size: 0.95rem; transition: var(--transition); outline: none;
-        }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,77,0,0.1); }
-        .form-group textarea { min-height: 120px; resize: vertical; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-        /* ============================================
-           LOGIN PAGE
-           ============================================ */
-        .login-page {
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, rgba(10,10,10,0.95), rgba(26,26,46,0.95)),
-                        url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1920') center/cover fixed;
-            padding: 20px;
-        }
-        .login-container {
-            width: 100%; max-width: 450px; background: var(--dark-2);
-            border-radius: var(--radius-lg); padding: 50px 40px;
-            border: 1px solid var(--dark-4); box-shadow: var(--shadow-lg);
-        }
-        .login-container .logo { text-align: center; margin-bottom: 30px; }
-        .login-container .logo h2 { font-size: 2rem; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; }
-        .login-container .logo i { font-size: 3rem; color: var(--primary); margin-bottom: 10px; display: block; }
-        .login-container h3 { text-align: center; font-size: 1.3rem; margin-bottom: 30px; color: var(--light-3); font-weight: 400; }
-        .login-container .form-group input { padding: 15px; font-size: 1rem; }
-        .login-footer { text-align: center; margin-top: 20px; color: var(--gray); }
-        .login-footer a { color: var(--primary); font-weight: 600; cursor: pointer; }
-
-        .error-msg, .success-msg {
-            padding: 12px 15px; border-radius: var(--radius-sm);
-            margin-bottom: 20px; font-size: 0.9rem; display: none;
-        }
-        .error-msg { background: rgba(255,23,68,0.1); border: 1px solid rgba(255,23,68,0.3); color: var(--danger); }
-        .success-msg { background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.3); color: var(--success); }
-        .error-msg.show, .success-msg.show { display: block; }
-
-        /* ============================================
-           DASHBOARD LAYOUT
-           ============================================ */
-        .dashboard { display: flex; min-height: 100vh; }
-        .sidebar {
-            width: 260px; background: var(--dark-2); border-right: 1px solid var(--dark-4);
-            padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; transition: var(--transition);
-        }
-        .sidebar-header { padding: 10px 20px 30px; border-bottom: 1px solid var(--dark-4); margin-bottom: 20px; }
-        .sidebar-header h2 { color: var(--primary); font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
-        .sidebar-menu { padding: 0 10px; }
-        .sidebar-menu a {
-            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
-            border-radius: var(--radius-sm); margin-bottom: 5px; transition: var(--transition);
-            color: var(--light-3); font-weight: 500; cursor: pointer;
-        }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background: rgba(255,77,0,0.1); color: var(--primary); }
-        .sidebar-menu a i { width: 20px; text-align: center; }
-        .sidebar-menu .menu-label { padding: 15px 20px 8px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gray); font-weight: 600; }
-        .sidebar-footer { padding: 20px; border-top: 1px solid var(--dark-4); margin-top: 20px; }
-        .sidebar-footer .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
-        .sidebar-footer .user-avatar { width: 40px; height: 40px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; }
-        .sidebar-footer .user-name { font-weight: 600; font-size: 0.95rem; }
-        .sidebar-footer .user-role { font-size: 0.75rem; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; }
-        .btn-logout {
-            width: 100%; padding: 10px; background: rgba(255,23,68,0.1);
-            border: 1px solid rgba(255,23,68,0.3); color: var(--danger);
-            border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9rem; font-weight: 600;
-            transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .btn-logout:hover { background: rgba(255,23,68,0.2); }
-        .main-content { flex: 1; margin-left: 260px; padding: 30px; min-height: 100vh; }
-        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
-        .content-header h1 { font-size: 1.8rem; font-weight: 700; }
-        .content-header h1 span { color: var(--primary); }
-
-        /* Dashboard stat cards */
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card {
-            background: var(--dark-2); border-radius: var(--radius-md); padding: 25px;
-            border: 1px solid var(--dark-4); display: flex; align-items: center; gap: 15px;
-            transition: var(--transition);
-        }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        .stat-card .stat-icon {
-            width: 55px; height: 55px; border-radius: var(--radius-sm);
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;
-        }
-        .stat-card .stat-icon.blue { background: rgba(33,150,243,0.15); color: var(--info); }
-        .stat-card .stat-icon.green { background: rgba(0,200,83,0.15); color: var(--success); }
-        .stat-card .stat-icon.orange { background: rgba(255,77,0,0.15); color: var(--primary); }
-        .stat-card .stat-icon.red { background: rgba(255,23,68,0.15); color: var(--danger); }
-        .stat-card .stat-details h3 { font-size: 1.8rem; font-weight: 800; }
-        .stat-card .stat-details p { color: var(--gray); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* Panel */
-        .panel { background: var(--dark-2); border-radius: var(--radius-md); border: 1px solid var(--dark-4); margin-bottom: 25px; overflow: hidden; }
-        .panel-header { padding: 20px 25px; border-bottom: 1px solid var(--dark-4); display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h3 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
-        .panel-header h3 i { color: var(--primary); }
-        .panel-body { padding: 25px; }
-
-        /* Table */
-        .table-responsive { overflow-x: auto; }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table thead { background: var(--dark-3); }
-        .data-table th { padding: 14px 15px; text-align: left; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--light-3); }
-        .data-table td { padding: 14px 15px; border-bottom: 1px solid var(--dark-4); font-size: 0.95rem; }
-        .data-table tbody tr { transition: var(--transition); }
-        .data-table tbody tr:hover { background: rgba(255,77,0,0.05); }
-        .member-info { display: flex; align-items: center; gap: 10px; }
-        .member-avatar { width: 35px; height: 35px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-        .badge { padding: 5px 12px; border-radius: var(--radius-xl); font-size: 0.8rem; font-weight: 600; }
-        .badge-active { background: rgba(0,200,83,0.15); color: var(--success); }
-        .badge-inactive { background: rgba(255,23,68,0.15); color: var(--danger); }
-        .action-btn { padding: 6px 12px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-size: 0.85rem; transition: var(--transition); margin-right: 5px; }
-        .action-btn.edit { background: rgba(33,150,243,0.15); color: var(--info); }
-        .action-btn.delete { background: rgba(255,23,68,0.15); color: var(--danger); }
-        .action-btn.view { background: rgba(0,200,83,0.15); color: var(--success); }
-        .action-btn:hover { transform: scale(1.05); }
-
-        /* Search bar */
-        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-input { flex: 1; min-width: 200px; padding: 12px 15px; background: var(--dark-3); border: 1px solid var(--dark-4); border-radius: var(--radius-sm); color: var(--light); font-size: 0.95rem; outline: none; transition: var(--transition); }
-        .search-input:focus { border-color: var(--primary); }
-        .filter-select { padding: 12px 15px; background: var(--dark-3); border: 1px solid var(--dark-4); border-radius: var(--radius-sm); color: var(--light); font-size: 0.95rem; outline: none; cursor: pointer; }
-
-        /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 10000; padding: 20px; }
-        .modal-overlay.show { display: flex; }
-        .modal { background: var(--dark-2); border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--dark-4); box-shadow: var(--shadow-lg); }
-        .modal-header { padding: 25px; border-bottom: 1px solid var(--dark-4); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
-        .modal-header h3 i { color: var(--primary); }
-        .modal-close { width: 35px; height: 35px; background: var(--dark-4); border: none; border-radius: 50%; color: var(--light); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--transition); }
-        .modal-close:hover { background: var(--danger); }
-        .modal-body { padding: 25px; }
-        .modal-footer { padding: 20px 25px; border-top: 1px solid var(--dark-4); display: flex; gap: 10px; justify-content: flex-end; }
-        .btn-cancel { padding: 10px 25px; background: var(--dark-4); color: var(--light); border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; transition: var(--transition); }
-        .btn-cancel:hover { background: var(--dark-3); }
-        .btn-save { padding: 10px 25px; background: var(--gradient-1); color: var(--light); border: none; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; transition: var(--transition); }
-        .btn-save:hover { box-shadow: var(--shadow-glow); }
-
-        /* Routine card */
-        .routine-card { background: var(--dark-3); border-radius: var(--radius-md); padding: 20px; margin-bottom: 15px; border-left: 4px solid var(--primary); transition: var(--transition); }
-        .routine-card:hover { background: var(--dark-4); }
-        .routine-card .day { color: var(--primary); font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; text-transform: uppercase; }
-        .exercise-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .exercise-item:last-child { border-bottom: none; }
-        .exercise-name { font-weight: 500; color: var(--light); }
-        .exercise-sets { color: var(--primary); font-weight: 600; font-size: 0.9rem; }
-
-        /* Notification items */
-        .notification-item { display: flex; gap: 15px; padding: 15px; background: var(--dark-3); border-radius: var(--radius-sm); margin-bottom: 10px; border-left: 3px solid var(--primary); transition: var(--transition); cursor: pointer; }
-        .notification-item:hover { background: var(--dark-4); }
-        .notification-item.unread { border-left-color: var(--info); background: rgba(33,150,243,0.05); }
-        .notification-icon { width: 40px; height: 40px; background: rgba(255,77,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0; }
-        .notification-content h4 { font-size: 0.95rem; margin-bottom: 5px; }
-        .notification-content p { color: var(--light-3); font-size: 0.85rem; white-space: pre-line; }
-        .notification-content .time { color: var(--gray); font-size: 0.75rem; margin-top: 5px; }
-
-        /* Profile */
-        .profile-card { text-align: center; padding: 30px; }
-        .profile-avatar { width: 100px; height: 100px; background: var(--gradient-1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; margin: 0 auto 20px; }
-        .profile-card h2 { font-size: 1.5rem; margin-bottom: 5px; }
-        .profile-card .member-id { color: var(--primary); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; }
-        .profile-details { text-align: left; margin-top: 20px; }
-        .profile-detail-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--dark-4); }
-        .profile-detail-item .label { color: var(--gray); font-size: 0.9rem; }
-        .profile-detail-item .value { font-weight: 600; }
-
-        /* Day tabs */
-        .day-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-        .day-tab { padding: 10px 20px; background: var(--dark-3); border: 1px solid var(--dark-4); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); font-weight: 600; font-size: 0.85rem; color: var(--light-3); }
-        .day-tab:hover, .day-tab.active { background: var(--primary); border-color: var(--primary); color: var(--light); }
-
-        /* Credential box */
-        .credential-box { background: var(--dark-3); border: 1px solid var(--primary); border-radius: var(--radius-sm); padding: 15px; margin-top: 15px; }
-        .credential-box p { margin-bottom: 5px; font-size: 0.9rem; }
-        .cred-label { color: var(--gray); }
-        .cred-value { color: var(--primary); font-weight: 700; font-family: monospace; font-size: 1.05rem; }
-        .copy-btn { margin-top: 10px; padding: 8px 15px; background: rgba(255,77,0,0.15); border: 1px solid var(--primary); color: var(--primary); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.85rem; transition: var(--transition); }
-        .copy-btn:hover { background: var(--primary); color: var(--light); }
-
-        /* Toast */
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { padding: 15px 20px; border-radius: var(--radius-sm); color: var(--light); font-weight: 500; min-width: 300px; display: flex; align-items: center; gap: 10px; animation: slideInRight 0.3s ease; box-shadow: var(--shadow-lg); }
-        .toast.success { background: rgba(0,200,83,0.9); }
-        .toast.error { background: rgba(255,23,68,0.9); }
-        .toast.info { background: rgba(33,150,243,0.9); }
-        .toast.warning { background: rgba(255,193,7,0.9); color: var(--dark); }
-        @keyframes slideInRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-
-        /* Empty state */
-        .empty-state { text-align: center; padding: 50px 20px; color: var(--gray); }
-        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: var(--dark-4); display: block; }
-        .empty-state h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--light-3); }
-
-        /* Sidebar toggle */
-        .sidebar-toggle { display: none; position: fixed; top: 15px; left: 15px; width: 45px; height: 45px; background: var(--primary); border: none; border-radius: var(--radius-sm); color: var(--light); font-size: 1.2rem; cursor: pointer; z-index: 101; }
-
-        .content-section { display: none; }
-        .content-section.active-section { display: block; }
-
-        /* Animations */
-        @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes fadeInDown { from{opacity:0;transform:translateY(-30px)} to{opacity:1;transform:translateY(0)} }
-
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
-        @media(max-width:992px){
-            .hero h1{font-size:2.8rem}
-            .about-grid,.contact-grid{grid-template-columns:1fr}
-            .footer-grid{grid-template-columns:1fr 1fr}
-            .section-header h2{font-size:2.2rem}
-            .sidebar{transform:translateX(-100%)}
-            .sidebar.open{transform:translateX(0)}
-            .sidebar-toggle{display:flex;align-items:center;justify-content:center}
-            .main-content{margin-left:0;padding:20px;padding-top:70px}
-        }
-        @media(max-width:768px){
-            .hero h1{font-size:2.2rem}
-            .nav-links{position:fixed;top:0;right:-100%;width:280px;height:100vh;background:var(--dark-2);flex-direction:column;padding:80px 30px;transition:var(--transition);gap:20px}
-            .nav-links.open{right:0}
-            .hamburger{display:flex}
-            .section{padding:60px 5%}
-            .about-features{grid-template-columns:1fr}
-            .pricing-card.featured{transform:none}
-            .form-row{grid-template-columns:1fr}
-            .footer-grid{grid-template-columns:1fr}
-            .dashboard-stats{grid-template-columns:1fr 1fr}
-            .login-container{padding:35px 25px}
-        }
-        @media(max-width:480px){
-            .hero h1{font-size:1.8rem}
-            .hero-buttons{flex-direction:column}
-            .dashboard-stats{grid-template-columns:1fr}
-            .day-tabs{gap:5px}
-            .day-tab{padding:8px 12px;font-size:0.8rem}
-        }
-    </style>
+.container { max-width: 980px; margin: 0 auto; padding: 16px; }
+.top-bar { background: white; border: 1px solid #ccc; border-radius: 6px; padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.top-bar label { font-weight: bold; font-size: 0.85rem; }
+.top-bar input[type="date"] { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 0.9rem; }
+.top-bar button { background: #1a56a0; color: white; border: none; border-radius: 4px; padding: 7px 16px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+.top-bar button:hover { background: #144080; }
+#fetch-status { font-size: 0.8rem; color: #888; }
+#fetch-status.ok { color: #1a7a3a; }
+#fetch-status.err { color: #c0392b; }
+.view-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.tab-btn { padding: 8px 20px; border-radius: 5px; border: 2px solid #1a56a0; cursor: pointer; font-size: 0.85rem; font-weight: bold; background: white; color: #1a56a0; }
+.tab-btn.active { background: #1a56a0; color: white; }
+.card { background: white; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 14px; overflow: hidden; }
+.card-header { background: #1a56a0; color: white; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; }
+.card-header h2 { font-size: 0.9rem; font-weight: bold; }
+.card-header .formula { font-size: 0.75rem; opacity: 0.8; font-style: italic; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #e8eef5; padding: 7px 10px; text-align: center; font-size: 0.78rem; color: #444; border-bottom: 1px solid #ccc; white-space: nowrap; }
+th:first-child { text-align: left; }
+td { padding: 6px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f7fafd; }
+.row-label { font-size: 0.85rem; }
+.row-label small { display: block; font-size: 0.7rem; color: #888; }
+input[type="number"] { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px 7px; font-size: 0.88rem; text-align: right; -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type="number"]:focus { outline: none; border-color: #1a56a0; }
+.yest-val { text-align: right; color: #555; font-size: 0.85rem; font-family: monospace; }
+.result { text-align: right; font-weight: bold; font-size: 0.88rem; color: #1a56a0; font-family: monospace; }
+.total-row td { background: #dde7f5 !important; font-weight: bold; }
+.sub-header td { background: #f0f4f8 !important; font-size: 0.78rem; font-weight: bold; color: #555; padding: 5px 10px; }
+.action-row { display: flex; gap: 10px; justify-content: center; margin: 18px 0 30px; flex-wrap: wrap; }
+.btn { padding: 10px 26px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
+.btn-save { background: #1a56a0; color: white; }
+.btn-save:hover { background: #144080; }
+.btn-sheets { background: #1a7a3a; color: white; }
+.btn-sheets:hover { background: #145e2d; }
+.btn-reset { background: #888; color: white; }
+.btn-reset:hover { background: #666; }
+.filter-bar { padding: 10px 16px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+.filter-bar label { font-size: 0.82rem; font-weight: bold; }
+.filter-bar input[type="date"] { border: 1px solid #ccc; border-radius: 4px; padding: 5px 8px; font-size: 0.82rem; }
+.filter-bar button { background: #1a56a0; color: white; border: none; border-radius: 4px; padding: 5px 14px; cursor: pointer; font-size: 0.82rem; font-weight: bold; }
+.data-table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 600px; }
+.data-table th { background: #1a56a0; color: white; padding: 7px 10px; white-space: nowrap; text-align: right; }
+.data-table th:first-child { text-align: left; }
+.data-table td { padding: 6px 10px; border-bottom: 1px solid #eee; text-align: right; white-space: nowrap; }
+.data-table td:first-child { text-align: left; font-weight: 500; background: #f7fafd; position: sticky; left: 0; }
+.data-table tr:hover td { background: #eef4fb; }
+.hist-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.hist-table th { background: #1a56a0; color: white; padding: 7px 10px; white-space: nowrap; }
+.hist-table td { padding: 6px 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
+.hist-table tr:hover td { background: #f0f4f8; }
+.del-btn { background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 3px 8px; cursor: pointer; font-size: 0.75rem; }
+#toast { display: none; position: fixed; bottom: 24px; right: 24px; background: #1a56a0; color: white; padding: 12px 18px; border-radius: 6px; font-size: 0.88rem; z-index: 999; max-width: 320px; }
+#loading { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9999; align-items: center; justify-content: center; }
+#loading.show { display: flex; }
+.spinner { background: white; padding: 20px 30px; border-radius: 8px; font-weight: bold; font-size: 1rem; }
+.no-data { text-align: center; padding: 30px; color: #888; }
+</style>
 </head>
 <body>
 
-    <!-- LOADING -->
-    <div class="loading-screen" id="loadingScreen"><div class="loader"></div></div>
+<div id="loading"><div class="spinner">⏳ Please wait...</div></div>
+<div id="toast"></div>
 
-    <!-- TOAST -->
-    <div class="toast-container" id="toastContainer"></div>
+<!-- ═══════════════════ LOGIN PAGE ═══════════════════ -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="icon">⚡</span>
+      <h2>Lebherr Maintenance </h2>
+      <p>Factory Energy Management System</p>
+    </div>
+    <div class="login-field">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="Enter your email" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="remember-row">
+      <input type="checkbox" id="remember-me" checked>
+      <label for="remember-me">Keep me logged in on this browser</label>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
 
-    <!-- ================================================================
-         PAGE 1: LANDING PAGE
-         ================================================================ -->
-    <div class="page active" id="page-landing">
-        <nav class="navbar" id="navbar">
-            <a href="#" class="nav-logo" onclick="navigateTo('landing');return false"><i class="fas fa-dumbbell"></i> PowerFit</a>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#programs">Programs</a></li>
-                <li><a href="#trainers">Trainers</a></li>
-                <li><a href="#pricing">Pricing</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="#" class="nav-btn" onclick="navigateTo('login');return false"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-            </ul>
-            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
-        </nav>
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="app-page">
+  <header>
+    <h1>⚡ Daily Power Readings</h1>
+    <div class="header-right">
+      <span class="user-info" id="user-email-display"></span>
+      <span id="clock"></span>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
 
-        <section class="hero" id="home">
-            <div class="hero-content">
-                <div class="hero-badge">🏆 #1 Gym in the City</div>
-                <h1>Build Your <span>Perfect Body</span> With Us</h1>
-                <p>Join our community of fitness enthusiasts and transform your body with expert trainers, modern equipment, and personalized workout plans.</p>
-                <div class="hero-buttons">
-                    <a href="#pricing" class="btn-primary"><i class="fas fa-rocket"></i> Get Started</a>
-                    <a href="#programs" class="btn-secondary"><i class="fas fa-play"></i> Our Programs</a>
-                </div>
-            </div>
-            <div class="scroll-indicator"><i class="fas fa-chevron-down"></i></div>
-        </section>
+  <div class="container">
+    <div class="top-bar">
+      <label>Date:</label>
+      <input type="date" id="entry-date">
+      <button onclick="fetchYesterday()">↓ Load Yesterday</button>
+      <span id="fetch-status">Select date then load yesterday's readings.</span>
+    </div>
 
-        <div class="stats-bar">
-            <div class="stat-item"><span class="stat-number" data-target="500">0</span><span class="stat-label">Active Members</span></div>
-            <div class="stat-item"><span class="stat-number" data-target="15">0</span><span class="stat-label">Expert Trainers</span></div>
-            <div class="stat-item"><span class="stat-number" data-target="10">0</span><span class="stat-label">Years Experience</span></div>
-            <div class="stat-item"><span class="stat-number" data-target="50">0</span><span class="stat-label">Programs</span></div>
+    <div class="view-tabs">
+      <button class="tab-btn active" id="tab-entry"   onclick="showView('entry')">📝 Enter Readings</button>
+      <button class="tab-btn"        id="tab-raw"     onclick="showView('raw')">📋 Raw Table</button>
+      <button class="tab-btn"        id="tab-total"   onclick="showView('total')">📊 Total Table</button>
+      <button class="tab-btn"        id="tab-history" onclick="showView('history')">🗂 History</button>
+    </div>
+
+    <!-- ENTRY VIEW -->
+    <div id="entry-view">
+      <div class="card">
+        <div class="card-header"><h2>A — Total Factory Power Consumption</h2><span class="formula">(Today − Yesterday) × 30</span></div>
+        <table><tr><th>Parameter</th><th>Today</th><th>Yesterday</th><th>Consumption</th></tr>
+          <tr><td class="row-label">KWH Reading</td><td><input type="number" id="kwh-t" oninput="calc()"></td><td><div class="yest-val" id="y-kwh">—</div></td><td><div class="result" id="r-kwh">—</div></td></tr>
+          <tr><td class="row-label">KVAH Reading</td><td><input type="number" id="kvah-t" oninput="calc()"></td><td><div class="yest-val" id="y-kvah">—</div></td><td><div class="result" id="r-kvah">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>B — Solar Power Generation</h2><span class="formula">Each (T−Y)×6, sum all 3</span></div>
+        <table><tr><th>Meter</th><th>Today</th><th>Yesterday</th><th>Result</th></tr>
+          <tr><td class="row-label">Solar Meter 1</td><td><input type="number" id="sol1-t" oninput="calc()"></td><td><div class="yest-val" id="y-sol1">—</div></td><td><div class="result" id="r-sol1">—</div></td></tr>
+          <tr><td class="row-label">Solar Meter 2</td><td><input type="number" id="sol2-t" oninput="calc()"></td><td><div class="yest-val" id="y-sol2">—</div></td><td><div class="result" id="r-sol2">—</div></td></tr>
+          <tr><td class="row-label">Solar Meter 3</td><td><input type="number" id="sol3-t" oninput="calc()"></td><td><div class="yest-val" id="y-sol3">—</div></td><td><div class="result" id="r-sol3">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">Total Solar Generated</td><td><div class="result" id="r-solar-total">—</div></td></tr>
+          <tr><td class="row-label">Solar Power Exported</td><td><input type="number" id="solexp-t" oninput="calc()"></td><td><div class="yest-val" id="y-solexp">—</div></td><td><div class="result" id="r-solexp">—</div></td></tr>
+          <tr><td class="row-label">Solar Power Consumed</td><td><input type="number" id="solcons-t" oninput="calc()"></td><td><div class="yest-val" id="y-solcons">—</div></td><td><div class="result" id="r-solcons">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>C — Machines</h2><span class="formula">T−Y (★=×1000)</span></div>
+        <table><tr><th>Machine</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
+          <tr><td class="row-label">CRF</td><td><input type="number" id="crf-t" oninput="calc()"></td><td><div class="yest-val" id="y-crf">—</div></td><td><div class="result" id="r-crf">—</div></td></tr>
+          <tr><td class="row-label">DML</td><td><input type="number" id="dml-t" oninput="calc()"></td><td><div class="yest-val" id="y-dml">—</div></td><td><div class="result" id="r-dml">—</div></td></tr>
+          <tr><td class="row-label">Door Foaming Machine ★<small>×1000</small></td><td><input type="number" id="door-t" oninput="calc()"></td><td><div class="yest-val" id="y-door">—</div></td><td><div class="result" id="r-door">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Dry</td><td><input type="number" id="cab-dry-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-dry">—</div></td><td><div class="result" id="r-cab-dry">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">Cabinet Foaming Total (Wet + Dry)</td><td><div class="result" id="r-cab-total">—</div></td></tr>
+          <tr><td class="row-label">Pre Mix Area ★<small>×1000</small></td><td><input type="number" id="premix-t" oninput="calc()"></td><td><div class="yest-val" id="y-premix">—</div></td><td><div class="result" id="r-premix">—</div></td></tr>
+          <tr><td class="row-label">Thermoforming Machine</td><td><input type="number" id="thermo-t" oninput="calc()"></td><td><div class="yest-val" id="y-thermo">—</div></td><td><div class="result" id="r-thermo">—</div></td></tr>
+          <tr><td class="row-label">Compressors & Dryers</td><td><input type="number" id="comp-t" oninput="calc()"></td><td><div class="yest-val" id="y-comp">—</div></td><td><div class="result" id="r-comp">—</div></td></tr>
+          <tr><td class="row-label">Agramkow & Run Test</td><td><input type="number" id="agr-t" oninput="calc()"></td><td><div class="yest-val" id="y-agr">—</div></td><td><div class="result" id="r-agr">—</div></td></tr>
+          <tr><td class="row-label">SPM Machines (DC220, TM350, TM450)</td><td><input type="number" id="spm-t" oninput="calc()"></td><td><div class="yest-val" id="y-spm">—</div></td><td><div class="result" id="r-spm">—</div></td></tr>
+          <tr><td class="row-label">N2 Generator Old ★<small>×1000</small></td><td><input type="number" id="n2-t" oninput="calc()"></td><td><div class="yest-val" id="y-n2">—</div></td><td><div class="result" id="r-n2">—</div></td></tr>
+          <tr class="sub-header"><td colspan="4">Lighting – Shop Floor &nbsp;<em style="font-weight:normal">(L1+L2+L3 each T−Y, ÷2)</em></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">L1</td><td><input type="number" id="l1-t" oninput="calc()"></td><td><div class="yest-val" id="y-l1">—</div></td><td><div class="result" id="r-l1">—</div></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">L2</td><td><input type="number" id="l2-t" oninput="calc()"></td><td><div class="yest-val" id="y-l2">—</div></td><td><div class="result" id="r-l2">—</div></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">L3</td><td><input type="number" id="l3-t" oninput="calc()"></td><td><div class="yest-val" id="y-l3">—</div></td><td><div class="result" id="r-l3">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">Shop Floor Lighting Total</td><td><div class="result" id="r-lighting">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>D — Utilities</h2><span class="formula">T−Y (★=×1000)</span></div>
+        <table><tr><th>Utility</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
+          <tr><td class="row-label">Chiller ★<small>×1000</small></td><td><input type="number" id="chiller-t" oninput="calc()"></td><td><div class="yest-val" id="y-chiller">—</div></td><td><div class="result" id="r-chiller">—</div></td></tr>
+          <tr><td class="row-label">AHU ★<small>×1000</small></td><td><input type="number" id="ahu-t" oninput="calc()"></td><td><div class="yest-val" id="y-ahu">—</div></td><td><div class="result" id="r-ahu">—</div></td></tr>
+          <tr><td class="row-label">STP ★<small>×1000</small></td><td><input type="number" id="stp-t" oninput="calc()"></td><td><div class="yest-val" id="y-stp">—</div></td><td><div class="result" id="r-stp">—</div></td></tr>
+          <tr><td class="row-label">Lighting – Warehouse, Stores, CB, SB & Canteen</td><td><input type="number" id="litwh-t" oninput="calc()"></td><td><div class="yest-val" id="y-litwh">—</div></td><td><div class="result" id="r-litwh">—</div></td></tr>
+          <tr><td class="row-label">Canteen Cooler ★<small>×1000</small></td><td><input type="number" id="canteen-t" oninput="calc()"></td><td><div class="yest-val" id="y-canteen">—</div></td><td><div class="result" id="r-canteen">—</div></td></tr>
+          <tr><td class="row-label">VRF ★<small>×1000</small></td><td><input type="number" id="vrf-t" oninput="calc()"></td><td><div class="yest-val" id="y-vrf">—</div></td><td><div class="result" id="r-vrf">—</div></td></tr>
+          <tr class="sub-header"><td colspan="4">Street Lighting &nbsp;<em style="font-weight:normal">(FP1+FP2+FP3 sum)</em></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">FP1</td><td><input type="number" id="fp1-t" oninput="calc()"></td><td><div class="yest-val" id="y-fp1">—</div></td><td><div class="result" id="r-fp1">—</div></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">FP2</td><td><input type="number" id="fp2-t" oninput="calc()"></td><td><div class="yest-val" id="y-fp2">—</div></td><td><div class="result" id="r-fp2">—</div></td></tr>
+          <tr><td class="row-label" style="padding-left:20px;">FP3</td><td><input type="number" id="fp3-t" oninput="calc()"></td><td><div class="yest-val" id="y-fp3">—</div></td><td><div class="result" id="r-fp3">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">Street Lighting Total</td><td><div class="result" id="r-street">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>E — R&D Labs</h2><span class="formula">(T−Y) × 1000 each, then RXD+UPS</span></div>
+        <table><tr><th>Reading</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
+          <tr><td class="row-label">RXD ★<small>×1000</small></td><td><input type="number" id="rxd-t" oninput="calc()"></td><td><div class="yest-val" id="y-rxd">—</div></td><td><div class="result" id="r-rxd">—</div></td></tr>
+          <tr><td class="row-label">UPS ★<small>×1000</small></td><td><input type="number" id="ups-t" oninput="calc()"></td><td><div class="yest-val" id="y-ups">—</div></td><td><div class="result" id="r-ups">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">R&D Total (RXD + UPS)</td><td><div class="result" id="r-rnd">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h2>F — Other Loads</h2><span class="formula">T−Y</span></div>
+        <table><tr><th>Area</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
+          <tr><td class="row-label">Warehouse Office, Server 1&2, WTP, Pumphouse, Security, Dock & Shutters</td><td><input type="number" id="other-t" oninput="calc()"></td><td><div class="yest-val" id="y-other">—</div></td><td><div class="result" id="r-other">—</div></td></tr>
+        </table>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-reset"  onclick="resetForm()">🔄 Reset</button>
+        <button class="btn btn-save"   onclick="saveAll()">💾 Save</button>
+      </div>
+    </div>
+
+    <!-- RAW TABLE -->
+    <div id="raw-view" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h2>📋 Raw Meter Readings</h2><span class="formula">Actual values entered per day</span></div>
+        <div class="filter-bar">
+          <label>From:</label><input type="date" id="raw-from">
+          <label>To:</label><input type="date" id="raw-to">
+          <button onclick="applyFilter('raw')">Filter</button>
+          <button onclick="resetFilter('raw')" style="background:#888;">Reset</button>
         </div>
-
-        <section class="section" id="about">
-            <div class="about-grid">
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800" alt="Gym">
-                    <div class="experience-badge"><span class="number">10+</span><span class="text">Years Experience</span></div>
-                </div>
-                <div class="about-content">
-                    <div class="section-badge">About Us</div>
-                    <h2>We Are <span>PowerFit</span></h2>
-                    <p>PowerFit is more than just a gym. We are a community dedicated to helping you achieve your fitness goals with state-of-the-art equipment and expert trainers.</p>
-                    <div class="about-features">
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Modern Equipment</span></div>
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Expert Trainers</span></div>
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Personal Plans</span></div>
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Nutrition Advice</span></div>
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Shower & Locker</span></div>
-                        <div class="about-feature"><i class="fas fa-check-circle"></i><span>Free Parking</span></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="programs" style="background:var(--dark-2)">
-            <div class="section-header">
-                <div class="section-badge">Our Programs</div>
-                <h2>Explore Our <span>Programs</span></h2>
-                <p>Choose from a wide range of fitness programs</p>
-            </div>
-            <div class="programs-grid">
-                <div class="program-card"><div class="program-icon"><i class="fas fa-dumbbell"></i></div><h3>Strength Training</h3><p>Build muscle and increase strength with comprehensive weight training programs.</p></div>
-                <div class="program-card"><div class="program-icon"><i class="fas fa-heartbeat"></i></div><h3>Cardio Fitness</h3><p>Improve cardiovascular health with high-energy cardio sessions including HIIT.</p></div>
-                <div class="program-card"><div class="program-icon"><i class="fas fa-child"></i></div><h3>Yoga & Flexibility</h3><p>Find balance and flexibility through our yoga classes for all levels.</p></div>
-                <div class="program-card"><div class="program-icon"><i class="fas fa-fist-raised"></i></div><h3>Boxing & MMA</h3><p>Learn self-defense and get fit with boxing and martial arts training.</p></div>
-                <div class="program-card"><div class="program-icon"><i class="fas fa-running"></i></div><h3>CrossFit</h3><p>Challenge yourself with intense CrossFit workouts combining strength and agility.</p></div>
-                <div class="program-card"><div class="program-icon"><i class="fas fa-apple-alt"></i></div><h3>Nutrition Planning</h3><p>Get personalized nutrition plans that complement your workout routine.</p></div>
-            </div>
-        </section>
-
-        <section class="section" id="trainers">
-            <div class="section-header">
-                <div class="section-badge">Our Team</div>
-                <h2>Expert <span>Trainers</span></h2>
-                <p>Meet our certified fitness professionals</p>
-            </div>
-            <div class="trainers-grid">
-                <div class="trainer-card"><div class="trainer-image"><img src="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400" alt="Trainer"></div><div class="trainer-info"><h3>Rajesh Kumar</h3><span class="specialty">Strength & Conditioning</span></div></div>
-                <div class="trainer-card"><div class="trainer-image"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400" alt="Trainer"></div><div class="trainer-info"><h3>Priya Sharma</h3><span class="specialty">Yoga & Pilates</span></div></div>
-                <div class="trainer-card"><div class="trainer-image"><img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400" alt="Trainer"></div><div class="trainer-info"><h3>Amit Patel</h3><span class="specialty">CrossFit & HIIT</span></div></div>
-                <div class="trainer-card"><div class="trainer-image"><img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400" alt="Trainer"></div><div class="trainer-info"><h3>Sneha Reddy</h3><span class="specialty">Nutrition & Weight Loss</span></div></div>
-            </div>
-        </section>
-
-        <section class="section" id="pricing" style="background:var(--dark-2)">
-            <div class="section-header">
-                <div class="section-badge">Pricing</div>
-                <h2>Membership <span>Plans</span></h2>
-                <p>Choose the plan that fits your fitness journey</p>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Basic</h3><div class="price">₹999<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Gym Access (6AM-10PM)</li>
-                        <li><i class="fas fa-check"></i> Basic Equipment</li>
-                        <li><i class="fas fa-check"></i> Locker Room</li>
-                        <li><i class="fas fa-xmark"></i> Personal Trainer</li>
-                        <li><i class="fas fa-xmark"></i> Nutrition Plan</li>
-                    </ul>
-                    <a href="#contact" class="btn-primary" style="width:100%;justify-content:center">Choose Plan</a>
-                </div>
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
-                    <h3>Premium</h3><div class="price">₹1,999<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 24/7 Gym Access</li>
-                        <li><i class="fas fa-check"></i> All Equipment</li>
-                        <li><i class="fas fa-check"></i> Personal Trainer</li>
-                        <li><i class="fas fa-check"></i> Nutrition Plan</li>
-                        <li><i class="fas fa-check"></i> Group Classes</li>
-                    </ul>
-                    <a href="#contact" class="btn-primary" style="width:100%;justify-content:center">Choose Plan</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Elite</h3><div class="price">₹3,499<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> 24/7 VIP Access</li>
-                        <li><i class="fas fa-check"></i> Dedicated Trainer</li>
-                        <li><i class="fas fa-check"></i> Custom Nutrition</li>
-                        <li><i class="fas fa-check"></i> All Classes</li>
-                        <li><i class="fas fa-check"></i> Recovery Zone</li>
-                    </ul>
-                    <a href="#contact" class="btn-primary" style="width:100%;justify-content:center">Choose Plan</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="section" id="contact">
-            <div class="section-header">
-                <div class="section-badge">Contact Us</div>
-                <h2>Get In <span>Touch</span></h2>
-            </div>
-            <div class="contact-grid">
-                <div>
-                    <div class="contact-info-item"><i class="fas fa-map-marker-alt"></i><div><h4>Location</h4><p>123 Fitness Street, MG Road, Bangalore</p></div></div>
-                    <div class="contact-info-item"><i class="fas fa-phone"></i><div><h4>Phone</h4><p>+91 98765 43210</p></div></div>
-                    <div class="contact-info-item"><i class="fas fa-envelope"></i><div><h4>Email</h4><p>info@powerfitgym.com</p></div></div>
-                    <div class="contact-info-item"><i class="fas fa-clock"></i><div><h4>Hours</h4><p>Mon-Sat: 5AM-11PM | Sun: 6AM-8PM</p></div></div>
-                </div>
-                <div class="contact-form">
-                    <h3>Send us a Message</h3>
-                    <form onsubmit="event.preventDefault();alert('Message sent! We will contact you soon.');this.reset()">
-                        <div class="form-row">
-                            <div class="form-group"><label>First Name</label><input type="text" placeholder="John" required></div>
-                            <div class="form-group"><label>Last Name</label><input type="text" placeholder="Doe" required></div>
-                        </div>
-                        <div class="form-group"><label>Email</label><input type="email" placeholder="john@example.com" required></div>
-                        <div class="form-group"><label>Message</label><textarea placeholder="Your message..."></textarea></div>
-                        <button type="submit" class="btn-primary" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Send</button>
-                    </form>
-                </div>
-            </div>
-        </section>
-
-        <footer class="footer">
-            <div class="footer-grid">
-                <div class="footer-col"><h3><span>Power</span>Fit</h3><p>Your ultimate fitness destination with world-class facilities and expert training.</p>
-                    <div class="footer-social"><a href="#"><i class="fab fa-facebook-f"></i></a><a href="#"><i class="fab fa-instagram"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-youtube"></i></a></div>
-                </div>
-                <div class="footer-col"><h3>Quick Links</h3><ul><li><a href="#home">Home</a></li><li><a href="#about">About</a></li><li><a href="#programs">Programs</a></li><li><a href="#" onclick="navigateTo('login');return false">Login</a></li></ul></div>
-                <div class="footer-col"><h3>Programs</h3><ul><li><a href="#">Strength</a></li><li><a href="#">Cardio</a></li><li><a href="#">Yoga</a></li><li><a href="#">CrossFit</a></li></ul></div>
-                <div class="footer-col"><h3>Support</h3><ul><li><a href="#">FAQ</a></li><li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#contact">Contact</a></li></ul></div>
-            </div>
-            <div class="footer-bottom"><p>© 2024 PowerFit Gym. All rights reserved.</p></div>
-        </footer>
+        <div class="data-table-wrap"><table class="data-table"><thead><tr id="raw-head"></tr></thead><tbody id="raw-body"></tbody></table></div>
+      </div>
     </div>
 
-    <!-- ================================================================
-         PAGE 2: LOGIN
-         ================================================================ -->
-    <div class="page" id="page-login">
-        <div class="login-page">
-            <div class="login-container">
-                <div class="logo"><i class="fas fa-dumbbell"></i><h2>PowerFit</h2></div>
-                <h3>Sign in to your account</h3>
-                <div class="error-msg" id="loginError"></div>
-                <div class="success-msg" id="loginSuccess"></div>
-                <form id="loginForm">
-                    <div class="form-group"><label><i class="fas fa-envelope"></i> Email</label><input type="email" id="loginEmail" placeholder="Enter your email" required></div>
-                    <div class="form-group"><label><i class="fas fa-lock"></i> Password</label><input type="password" id="loginPassword" placeholder="Enter password" required></div>
-                    <button type="submit" class="btn-primary" id="loginBtn" style="width:100%;justify-content:center;border-radius:var(--radius-sm)"><i class="fas fa-sign-in-alt"></i> Sign In</button>
-                </form>
-                <div class="login-footer">
-                    <p style="margin-bottom:10px"><a onclick="navigateTo('landing')"><i class="fas fa-arrow-left"></i> Back to Home</a></p>
-                    <p style="font-size:0.8rem;color:var(--gray)">First time? <a onclick="navigateTo('setup')" style="cursor:pointer">Setup Owner Account</a></p>
-                </div>
-            </div>
+    <!-- TOTAL TABLE -->
+    <div id="total-view" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h2>📊 Total Consumption (kWh)</h2><span class="formula">Calculated values</span></div>
+        <div class="filter-bar">
+          <label>From:</label><input type="date" id="total-from">
+          <label>To:</label><input type="date" id="total-to">
+          <button onclick="applyFilter('total')">Filter</button>
+          <button onclick="resetFilter('total')" style="background:#888;">Reset</button>
         </div>
+        <div class="data-table-wrap"><table class="data-table"><thead><tr id="total-head"></tr></thead><tbody id="total-body"></tbody></table></div>
+      </div>
     </div>
 
-    <!-- ================================================================
-         PAGE 3: OWNER SETUP
-         ================================================================ -->
-    <div class="page" id="page-setup">
-        <div class="login-page">
-            <div class="login-container">
-                <div class="logo"><i class="fas fa-user-shield"></i><h2>Owner Setup</h2></div>
-                <h3>Create Owner Account (One Time)</h3>
-                <div class="error-msg" id="setupError"></div>
-                <div class="success-msg" id="setupSuccess"></div>
-                <form id="setupForm">
-                    <div class="form-group"><label>Owner Name</label><input type="text" id="setupName" placeholder="Gym Owner" value="Gym Owner" required></div>
-                    <div class="form-group"><label>Email</label><input type="email" id="setupEmail" placeholder="owner@gym.com" required></div>
-                    <div class="form-group"><label>Password (min 6)</label><input type="password" id="setupPassword" placeholder="Strong password" required minlength="6"></div>
-                    <button type="submit" class="btn-primary" id="setupBtn" style="width:100%;justify-content:center;border-radius:var(--radius-sm)"><i class="fas fa-user-shield"></i> Create Owner Account</button>
-                </form>
-                <div class="login-footer"><p><a onclick="navigateTo('login')"><i class="fas fa-arrow-left"></i> Back to Login</a></p></div>
-            </div>
+    <!-- HISTORY -->
+    <div id="history-view" style="display:none;">
+      <div class="card">
+        <div class="card-header"><h2>🗂 All Records (Last 1 Year)</h2></div>
+        <div class="filter-bar">
+          <label>From:</label><input type="date" id="hist-from">
+          <label>To:</label><input type="date" id="hist-to">
+          <button onclick="applyFilter('hist')">Filter</button>
+          <button onclick="resetFilter('hist')" style="background:#888;">Reset</button>
         </div>
-    </div>
-
-    <!-- ================================================================
-         PAGE 4: OWNER DASHBOARD
-         ================================================================ -->
-    <div class="page" id="page-owner">
-        <div class="dashboard">
-            <button class="sidebar-toggle" onclick="document.getElementById('ownerSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-            <aside class="sidebar" id="ownerSidebar">
-                <div class="sidebar-header"><h2><i class="fas fa-dumbbell"></i> PowerFit</h2></div>
-                <nav class="sidebar-menu">
-                    <div class="menu-label">Main</div>
-                    <a class="active" onclick="showOwnerSection('o-dashboard')"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a onclick="showOwnerSection('o-members')"><i class="fas fa-users"></i> Members</a>
-                    <a onclick="showOwnerSection('o-addmember')"><i class="fas fa-user-plus"></i> Add Member</a>
-                    <div class="menu-label">Management</div>
-                    <a onclick="showOwnerSection('o-routines')"><i class="fas fa-clipboard-list"></i> Routines</a>
-                    <a onclick="showOwnerSection('o-notifications')"><i class="fas fa-bell"></i> Notifications</a>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="user-info">
-                        <div class="user-avatar" id="ownerAvatar">O</div>
-                        <div><div class="user-name" id="ownerName">Owner</div><div class="user-role">Gym Owner</div></div>
-                    </div>
-                    <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </div>
-            </aside>
-            <main class="main-content">
-                <!-- Owner Dashboard -->
-                <div class="content-section active-section" id="o-dashboard">
-                    <div class="content-header"><h1>Welcome, <span id="ownerWelcome">Owner</span> 👋</h1></div>
-                    <div class="dashboard-stats">
-                        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-users"></i></div><div class="stat-details"><h3 id="oTotalMembers">0</h3><p>Total Members</p></div></div>
-                        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-user-check"></i></div><div class="stat-details"><h3 id="oActiveMembers">0</h3><p>Active</p></div></div>
-                        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-bell"></i></div><div class="stat-details"><h3 id="oTotalNotifs">0</h3><p>Notifications</p></div></div>
-                        <div class="stat-card"><div class="stat-icon red"><i class="fas fa-user-times"></i></div><div class="stat-details"><h3 id="oExpiredMembers">0</h3><p>Expired</p></div></div>
-                    </div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-clock"></i> Recent Members</h3></div><div class="panel-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Member</th><th>Phone</th><th>Plan</th><th>Status</th></tr></thead><tbody id="oRecentTable"><tr><td colspan="4"><div class="empty-state"><i class="fas fa-users"></i><p>No members yet</p></div></td></tr></tbody></table></div></div></div>
-
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-bell"></i> Send Daily Routine Reminders</h3></div><div class="panel-body"><p style="color:var(--light-3);margin-bottom:15px">Send today's routine to all active members with assigned workouts.</p><button class="btn-primary" onclick="sendDailyRoutineNotifs()" style="justify-content:center"><i class="fas fa-bell"></i> Send Today's Reminders</button></div></div>
-                </div>
-
-                <!-- All Members -->
-                <div class="content-section" id="o-members">
-                    <div class="content-header"><h1><i class="fas fa-users"></i> All <span>Members</span></h1><button class="btn-primary" onclick="showOwnerSection('o-addmember')"><i class="fas fa-plus"></i> Add</button></div>
-                    <div class="search-bar"><input type="text" class="search-input" id="oSearch" placeholder="Search by name, email, phone..." oninput="renderAllMembers()"><select class="filter-select" id="oFilter" onchange="renderAllMembers()"><option value="all">All</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-                    <div class="panel"><div class="panel-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Member</th><th>Email</th><th>Phone</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead><tbody id="oAllTable"></tbody></table></div></div></div>
-                </div>
-
-                <!-- Add Member -->
-                <div class="content-section" id="o-addmember">
-                    <div class="content-header"><h1><i class="fas fa-user-plus"></i> Add New <span>Member</span></h1></div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-id-card"></i> Member Registration</h3></div><div class="panel-body">
-                        <div class="error-msg" id="addMemberError"></div>
-                        <div class="success-msg" id="addMemberSuccess"></div>
-                        <form id="addMemberForm">
-                            <div class="form-row"><div class="form-group"><label>Full Name *</label><input type="text" id="mName" required></div><div class="form-group"><label>Email *</label><input type="email" id="mEmail" required></div></div>
-                            <div class="form-row"><div class="form-group"><label>Phone *</label><input type="tel" id="mPhone" required></div><div class="form-group"><label>Age *</label><input type="number" id="mAge" min="14" max="80" required></div></div>
-                            <div class="form-row"><div class="form-group"><label>Gender *</label><select id="mGender" required><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div><div class="form-group"><label>Address</label><input type="text" id="mAddress"></div></div>
-                            <div class="form-row"><div class="form-group"><label>Plan *</label><select id="mPlan" required><option value="">Select</option><option value="Basic">Basic ₹999/mo</option><option value="Premium">Premium ₹1,999/mo</option><option value="Elite">Elite ₹3,499/mo</option></select></div><div class="form-group"><label>Duration *</label><select id="mDuration" required><option value="">Select</option><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months</option></select></div></div>
-                            <div class="form-group"><label>Health Notes</label><textarea id="mNotes" placeholder="Any health conditions..."></textarea></div>
-                            <div class="form-row"><div class="form-group"><label>Password for Member *</label><input type="text" id="mPassword" minlength="6" required></div><div class="form-group" style="display:flex;align-items:flex-end"><button type="button" class="btn-secondary" onclick="autoGenPass()" style="width:100%;justify-content:center;padding:12px"><i class="fas fa-key"></i> Generate</button></div></div>
-                            <button type="submit" class="btn-primary" id="addMemberBtn" style="width:100%;justify-content:center;margin-top:10px"><i class="fas fa-user-plus"></i> Register Member</button>
-                        </form>
-                        <div id="credentialDisplay" style="display:none;margin-top:25px">
-                            <h3 style="color:var(--success);margin-bottom:15px"><i class="fas fa-check-circle"></i> Member Registered!</h3>
-                            <p style="color:var(--light-3);margin-bottom:15px">Share these credentials with the member:</p>
-                            <div class="credential-box">
-                                <p><span class="cred-label">Name: </span><span class="cred-value" id="credName"></span></p>
-                                <p><span class="cred-label">Email: </span><span class="cred-value" id="credEmail"></span></p>
-                                <p><span class="cred-label">Password: </span><span class="cred-value" id="credPass"></span></p>
-                                <button class="copy-btn" onclick="copyCreds()"><i class="fas fa-copy"></i> Copy</button>
-                            </div>
-                        </div>
-                    </div></div>
-                </div>
-
-                <!-- Routines -->
-                <div class="content-section" id="o-routines">
-                    <div class="content-header"><h1><i class="fas fa-clipboard-list"></i> Manage <span>Routines</span></h1><button class="btn-primary" onclick="document.getElementById('routineModal').classList.add('show')"><i class="fas fa-plus"></i> Assign Routine</button></div>
-                    <div class="search-bar"><select class="filter-select" id="routineMemberFilter" onchange="loadMemberRoutines(this.value)" style="flex:1"><option value="">Select Member</option></select></div>
-                    <div id="routineDisplay"><div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Select a member</h3></div></div>
-                </div>
-
-                <!-- Notifications -->
-                <div class="content-section" id="o-notifications">
-                    <div class="content-header"><h1><i class="fas fa-bell"></i> Send <span>Notifications</span></h1></div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-paper-plane"></i> Send Notification</h3></div><div class="panel-body">
-                        <form id="notifForm">
-                            <div class="form-group"><label>Send To *</label><select id="notifTarget" required><option value="">Select</option><option value="all">All Members</option></select></div>
-                            <div class="form-group"><label>Title *</label><input type="text" id="notifTitle" required></div>
-                            <div class="form-group"><label>Message *</label><textarea id="notifMessage" required></textarea></div>
-                            <div class="form-group"><label>Type</label><select id="notifType"><option value="general">General</option><option value="routine">Routine Reminder</option><option value="payment">Payment</option><option value="announcement">Announcement</option></select></div>
-                            <button type="submit" class="btn-primary" style="width:100%;justify-content:center"><i class="fas fa-paper-plane"></i> Send</button>
-                        </form>
-                    </div></div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-history"></i> Sent Notifications</h3></div><div class="panel-body" id="sentNotifs"><div class="empty-state"><i class="fas fa-bell-slash"></i><h3>None yet</h3></div></div></div>
-                </div>
-            </main>
+        <div style="overflow-x:auto;">
+          <table class="hist-table">
+            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&D</th><th>Other</th><th>Del</th></tr></thead>
+            <tbody id="history-body"></tbody>
+          </table>
         </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- ================================================================
-         PAGE 5: MEMBER DASHBOARD
-         ================================================================ -->
-    <div class="page" id="page-member">
-        <div class="dashboard">
-            <button class="sidebar-toggle" onclick="document.getElementById('memberSidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button>
-            <aside class="sidebar" id="memberSidebar">
-                <div class="sidebar-header"><h2><i class="fas fa-dumbbell"></i> PowerFit</h2></div>
-                <nav class="sidebar-menu">
-                    <div class="menu-label">Main</div>
-                    <a class="active" onclick="showMemberSection('m-dashboard')"><i class="fas fa-th-large"></i> Dashboard</a>
-                    <a onclick="showMemberSection('m-routine')"><i class="fas fa-clipboard-list"></i> My Routine</a>
-                    <a onclick="showMemberSection('m-notifications')"><i class="fas fa-bell"></i> Notifications <span class="badge badge-active" id="mNotifBadge" style="margin-left:auto;display:none">0</span></a>
-                    <a onclick="showMemberSection('m-profile')"><i class="fas fa-user"></i> My Profile</a>
-                </nav>
-                <div class="sidebar-footer">
-                    <div class="user-info">
-                        <div class="user-avatar" id="memAvatar">M</div>
-                        <div><div class="user-name" id="memName">Member</div><div class="user-role">Member</div></div>
-                    </div>
-                    <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </div>
-            </aside>
-            <main class="main-content">
-                <!-- Member Dashboard -->
-                <div class="content-section active-section" id="m-dashboard">
-                    <div class="content-header"><h1>Welcome, <span id="memWelcome">Member</span> 💪</h1></div>
-                    <div class="dashboard-stats">
-                        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-id-card"></i></div><div class="stat-details"><h3 id="mPlan">-</h3><p>Plan</p></div></div>
-                        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-calendar-check"></i></div><div class="stat-details"><h3 id="mDaysLeft">-</h3><p>Days Left</p></div></div>
-                        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-clipboard-list"></i></div><div class="stat-details"><h3 id="mTodayEx">-</h3><p>Today's Exercises</p></div></div>
-                        <div class="stat-card"><div class="stat-icon red"><i class="fas fa-bell"></i></div><div class="stat-details"><h3 id="mUnread">0</h3><p>Unread</p></div></div>
-                    </div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-dumbbell"></i> Today's Routine</h3><span id="mTodayDay" style="color:var(--primary);font-weight:600"></span></div><div class="panel-body" id="mTodayRoutine"><div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>No routine for today</h3></div></div></div>
-                    <div class="panel"><div class="panel-header"><h3><i class="fas fa-bell"></i> Recent Notifications</h3></div><div class="panel-body" id="mRecentNotifs"><div class="empty-state"><i class="fas fa-bell-slash"></i><h3>No notifications</h3></div></div></div>
-                </div>
-                <!-- My Routine -->
-                <div class="content-section" id="m-routine">
-                    <div class="content-header"><h1><i class="fas fa-clipboard-list"></i> My <span>Routine</span></h1></div>
-                    <div class="day-tabs" id="mDayTabs">
-                        <button class="day-tab" onclick="showDayRoutine('Monday',this)">Mon</button>
-                        <button class="day-tab" onclick="showDayRoutine('Tuesday',this)">Tue</button>
-                        <button class="day-tab" onclick="showDayRoutine('Wednesday',this)">Wed</button>
-                        <button class="day-tab" onclick="showDayRoutine('Thursday',this)">Thu</button>
-                        <button class="day-tab" onclick="showDayRoutine('Friday',this)">Fri</button>
-                        <button class="day-tab" onclick="showDayRoutine('Saturday',this)">Sat</button>
-                        <button class="day-tab" onclick="showDayRoutine('Sunday',this)">Sun</button>
-                    </div>
-                    <div id="mWeeklyRoutine"><div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Select a day</h3></div></div>
-                </div>
-                <!-- Notifications -->
-                <div class="content-section" id="m-notifications">
-                    <div class="content-header"><h1><i class="fas fa-bell"></i> <span>Notifications</span></h1><button class="btn-secondary" onclick="markAllRead()" style="padding:10px 20px"><i class="fas fa-check-double"></i> Mark All Read</button></div>
-                    <div id="mAllNotifs"><div class="empty-state"><i class="fas fa-bell-slash"></i><h3>No notifications</h3></div></div>
-                </div>
-                <!-- Profile -->
-                <div class="content-section" id="m-profile">
-                    <div class="content-header"><h1><i class="fas fa-user"></i> My <span>Profile</span></h1></div>
-                    <div style="max-width:600px"><div class="panel"><div class="panel-body"><div class="profile-card" id="mProfileCard"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div></div></div></div></div>
-                </div>
-            </main>
-        </div>
-    </div>
+<!-- Firebase already loaded in head -->
 
-    <!-- ================================================================
-         ROUTINE MODAL (Owner)
-         ================================================================ -->
-    <div class="modal-overlay" id="routineModal">
-        <div class="modal">
-            <div class="modal-header"><h3><i class="fas fa-clipboard-list"></i> Assign Routine</h3><button class="modal-close" onclick="document.getElementById('routineModal').classList.remove('show')"><i class="fas fa-times"></i></button></div>
-            <div class="modal-body">
-                <div class="form-group"><label>Member *</label><select id="routineMember" required><option value="">Select</option></select></div>
-                <div class="form-group"><label>Day *</label><select id="routineDay" required><option value="">Select</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>
-                <div id="exercisesList">
-                    <div class="form-row exercise-row"><div class="form-group"><label>Exercise</label><input type="text" class="ex-name" placeholder="e.g. Bench Press" required></div><div class="form-group"><label>Sets x Reps</label><input type="text" class="ex-sets" placeholder="e.g. 4x12" required></div></div>
-                </div>
-                <button type="button" class="btn-secondary" onclick="addExRow()" style="width:100%;justify-content:center;margin-bottom:15px"><i class="fas fa-plus"></i> Add Exercise</button>
-            </div>
-            <div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('routineModal').classList.remove('show')">Cancel</button><button class="btn-save" onclick="saveRoutine()"><i class="fas fa-save"></i> Save</button></div>
-        </div>
-    </div>
+<script>
+// ── Firebase Init ─────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ",
+  authDomain: "liebherr-maintenance.firebaseapp.com",
+  projectId: "liebherr-maintenance",
+  storageBucket: "liebherr-maintenance.firebasestorage.app",
+  messagingSenderId: "111977658931",
+  appId: "1:111977658931:web:25f4ac43224b3d7c2c8146"
+});
+const db   = firebase.firestore();
+const auth = firebase.auth();
 
-    <!-- MEMBER DETAIL MODAL -->
-    <div class="modal-overlay" id="memberModal">
-        <div class="modal"><div class="modal-header"><h3><i class="fas fa-user"></i> Member Details</h3><button class="modal-close" onclick="document.getElementById('memberModal').classList.remove('show')"><i class="fas fa-times"></i></button></div><div class="modal-body" id="memberModalBody"></div><div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('memberModal').classList.remove('show')">Close</button></div></div>
-    </div>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziay22bU-6W6iSTIN58dfvTd6pnPY8WCNyew-ehBL_imueHuNJdrPe33kyyrRq0cw_pg/exec";
+const SHEET_NAME = "Reading";
+const LS_KEY = "powerReadings_session";
 
-    <!-- ================================================================
-         FIREBASE & ALL JAVASCRIPT
-         ================================================================ -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script>
-    // ========================================================
-    // 🔥 FIREBASE CONFIG - REPLACE WITH YOUR OWN
-    // ========================================================
-    const firebaseConfig = {
-  apiKey: "AIzaSyDVPaaRLbEv796fxoId0jtXtV1JhrpFdE0",
-  authDomain: "abc-gym-4dc17.firebaseapp.com",
-  projectId: "abc-gym-4dc17",
-  storageBucket: "abc-gym-4dc17.firebasestorage.app",
-  messagingSenderId: "377757615025",
-  appId: "1:377757615025:web:62ad568230488a82d57390",
+// ── Field definitions ──────────────────────────────────────────
+const FIELDS = [
+  ['kwh','KWH',30],['kvah','KVAH',30],
+  ['sol1','Solar Meter 1',6],['sol2','Solar Meter 2',6],['sol3','Solar Meter 3',6],
+  ['solexp','Solar Exported',1],['solcons','Solar Consumed',1],
+  ['crf','CRF',1],['dml','DML',1],
+  ['door','Door Foaming',1000],
+  ['cab-wet','Cabinet Wet',1],['cab-dry','Cabinet Dry',1],
+  ['premix','Pre Mix',1000],['thermo','Thermoforming',1],
+  ['comp','Compressors',1],['agr','Agramkow',1],['spm','SPM',1],
+  ['n2','N2 Generator',1000],
+  ['l1','Light L1',1],['l2','Light L2',1],['l3','Light L3',1],
+  ['chiller','Chiller',1000],['ahu','AHU',1000],['stp','STP',1000],
+  ['litwh','Lighting WH',1],
+  ['canteen','Canteen Cooler',1000],['vrf','VRF',1000],
+  ['fp1','Street FP1',1],['fp2','Street FP2',1],['fp3','Street FP3',1],
+  ['rxd','RXD',1000],['ups','UPS',1000],['other','Other Loads',1],
+];
 
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+const TOTAL_LABELS = [
+  ['kwh','KWH (×30)'],['kvah','KVAH (×30)'],
+  ['solar','Solar Total'],['solexp','Solar Exported'],['solcons','Solar Consumed'],
+  ['crf','CRF'],['dml','DML'],['door','Door Foaming'],
+  ['cabwet','Cabinet Wet'],['cabdry','Cabinet Dry'],['cabtotal','Cabinet Total'],
+  ['premix','Pre Mix'],['thermo','Thermoforming'],['comp','Compressors'],
+  ['agr','Agramkow'],['spm','SPM'],['n2','N2 Generator'],
+  ['lighting','Lighting Shop Floor'],
+  ['chiller','Chiller'],['ahu','AHU'],['stp','STP'],
+  ['litwh','Lighting WH'],
+  ['canteen','Canteen Cooler'],['vrf','VRF'],
+  ['street','Street Lighting'],
+  ['rxd','RXD'],['ups','UPS'],['rnd','R&D Total'],['other','Other Loads'],
+];
 
-    // ========================================================
-    // GLOBAL STATE
-    // ========================================================
-    let currentUser = null, currentRole = null, allMembers = [], memberRoutines = [], memberNotifs = [], memberData = null;
+let yest = {};
+let allRecords = [];
 
-    // ========================================================
-    // PAGE NAVIGATION
-    // ========================================================
-    function navigateTo(page) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-' + page).classList.add('active');
-        window.scrollTo(0, 0);
+// ── Helpers ───────────────────────────────────────────────────
+function v(id) {
+  var el = document.getElementById(id+'-t');
+  if (!el) return 0;
+  var val = parseFloat(el.value);
+  return isNaN(val) ? 0 : val;
+}
+function y(id) { return (typeof yest[id]==='number') ? yest[id] : 0; }
+function setR(id, val) {
+  var el = document.getElementById('r-'+id);
+  if (el) el.textContent = (val===null||val===undefined) ? '—' : Number(val).toFixed(2);
+}
+function showLoading(s) { document.getElementById('loading').classList.toggle('show',s); }
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._t); t._t = setTimeout(function(){ t.style.display='none'; }, 3500);
+}
+
+// ── Calc ──────────────────────────────────────────────────────
+function calc() {
+  setR('kwh',  (v('kwh') -y('kwh')) *30);
+  setR('kvah', (v('kvah')-y('kvah'))*30);
+  var s1=(v('sol1')-y('sol1'))*6, s2=(v('sol2')-y('sol2'))*6, s3=(v('sol3')-y('sol3'))*6;
+  setR('sol1',s1); setR('sol2',s2); setR('sol3',s3);
+  setR('solar-total', s1+s2+s3);
+  setR('solexp',  v('solexp') -y('solexp'));
+  setR('solcons', v('solcons')-y('solcons'));
+  setR('crf',  v('crf') -y('crf'));
+  setR('dml',  v('dml') -y('dml'));
+  setR('door', (v('door')-y('door'))*1000);
+  var cabwet = v('cab-wet')-y('cab-wet');
+  var cabdry = v('cab-dry')-y('cab-dry');
+  setR('cab-wet', cabwet);
+  setR('cab-dry', cabdry);
+  setR('cab-total', cabwet + cabdry);
+  setR('premix',  (v('premix')-y('premix'))*1000);
+  setR('thermo',  v('thermo') -y('thermo'));
+  setR('comp',    v('comp')   -y('comp'));
+  setR('agr',     v('agr')    -y('agr'));
+  setR('spm',     v('spm')    -y('spm'));
+  setR('n2',     (v('n2')     -y('n2'))*1000);
+  var l1=v('l1')-y('l1'), l2=v('l2')-y('l2'), l3=v('l3')-y('l3');
+  setR('l1',l1); setR('l2',l2); setR('l3',l3);
+  setR('lighting', (l1+l2+l3)/2);
+  setR('chiller', (v('chiller')-y('chiller'))*1000);
+  setR('ahu',     (v('ahu')   -y('ahu'))   *1000);
+  setR('stp',     (v('stp')   -y('stp'))   *1000);
+  setR('litwh',   v('litwh')  -y('litwh'));
+  setR('canteen', (v('canteen')-y('canteen'))*1000);
+  setR('vrf',     (v('vrf')   -y('vrf'))   *1000);
+  var fp1=v('fp1')-y('fp1'), fp2=v('fp2')-y('fp2'), fp3=v('fp3')-y('fp3');
+  setR('fp1',fp1); setR('fp2',fp2); setR('fp3',fp3);
+  setR('street', fp1+fp2+fp3);
+  var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
+  setR('rxd',rxd); setR('ups',ups); setR('rnd', rxd+ups);
+  setR('other', v('other')-y('other'));
+}
+
+function getResults() {
+  var s1=(v('sol1')-y('sol1'))*6, s2=(v('sol2')-y('sol2'))*6, s3=(v('sol3')-y('sol3'))*6;
+  var l1=v('l1')-y('l1'), l2=v('l2')-y('l2'), l3=v('l3')-y('l3');
+  var fp1=v('fp1')-y('fp1'), fp2=v('fp2')-y('fp2'), fp3=v('fp3')-y('fp3');
+  var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
+  var cabwet=v('cab-wet')-y('cab-wet'), cabdry=v('cab-dry')-y('cab-dry');
+  return {
+    kwh:(v('kwh')-y('kwh'))*30, kvah:(v('kvah')-y('kvah'))*30,
+    solar:s1+s2+s3, solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
+    crf:v('crf')-y('crf'), dml:v('dml')-y('dml'),
+    door:(v('door')-y('door'))*1000,
+    cabwet:cabwet, cabdry:cabdry, cabtotal:cabwet+cabdry,
+    premix:(v('premix')-y('premix'))*1000,
+    thermo:v('thermo')-y('thermo'), comp:v('comp')-y('comp'),
+    agr:v('agr')-y('agr'), spm:v('spm')-y('spm'),
+    n2:(v('n2')-y('n2'))*1000,
+    lighting:(l1+l2+l3)/2,
+    chiller:(v('chiller')-y('chiller'))*1000,
+    ahu:(v('ahu')-y('ahu'))*1000, stp:(v('stp')-y('stp'))*1000,
+    litwh:v('litwh')-y('litwh'),
+    canteen:(v('canteen')-y('canteen'))*1000,
+    vrf:(v('vrf')-y('vrf'))*1000,
+    street:fp1+fp2+fp3,
+    rxd:rxd, ups:ups, rnd:rxd+ups,
+    other:v('other')-y('other')
+  };
+}
+
+// ── LOGIN / LOGOUT ────────────────────────────────────────────
+function doLogin() {
+  var email = document.getElementById('login-email').value.trim();
+  var pass  = document.getElementById('login-pass').value;
+  var errEl = document.getElementById('login-err');
+  var remember = document.getElementById('remember-me').checked;
+  if (!email||!pass) { errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  showLoading(true);
+
+  var persistence = remember
+    ? firebase.auth.Auth.Persistence.LOCAL
+    : firebase.auth.Auth.Persistence.SESSION;
+
+  auth.setPersistence(persistence).then(function(){
+    return auth.signInWithEmailAndPassword(email, pass);
+  }).then(function(cred){
+    if (remember) {
+      localStorage.setItem(LS_KEY, JSON.stringify({ email: cred.user.email, uid: cred.user.uid }));
     }
+    showLoading(false);
+    showApp(cred.user.email);
+  }).catch(function(e){
+    showLoading(false);
+    errEl.textContent = e.message.replace('Firebase: ','').replace(/\(auth.*\)/,'');
+    errEl.style.display='block';
+  });
+}
 
-    // ========================================================
-    // TOAST
-    // ========================================================
-    function showToast(msg, type = 'info') {
-        const c = document.getElementById('toastContainer');
-        const t = document.createElement('div');
-        t.className = 'toast ' + type;
-        const icons = { success: 'check-circle', error: 'exclamation-circle', info: 'info-circle', warning: 'exclamation-triangle' };
-        t.innerHTML = `<i class="fas fa-${icons[type]||'info-circle'}"></i> ${msg}`;
-        c.appendChild(t);
-        setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; setTimeout(() => t.remove(), 300); }, 4000);
+function doLogout() {
+  auth.signOut().then(function(){
+    localStorage.removeItem(LS_KEY);
+    document.getElementById('app-page').style.display='none';
+    document.getElementById('login-page').style.display='flex';
+    document.getElementById('login-email').value='';
+    document.getElementById('login-pass').value='';
+  });
+}
+
+function showApp(email) {
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app-page').style.display='block';
+  document.getElementById('user-email-display').textContent = email;
+  document.getElementById('entry-date').valueAsDate = new Date();
+  setDefaultRange('raw'); setDefaultRange('total'); setDefaultRange('hist');
+  loadAllData();
+}
+
+// ── Load Yesterday ────────────────────────────────────────────
+function fetchYesterday() {
+  var status = document.getElementById('fetch-status');
+  var dateVal = document.getElementById('entry-date').value;
+  if (!dateVal) { status.textContent='⚠ Select a date first.'; return; }
+  var d = new Date(dateVal);
+  d.setDate(d.getDate()-1);
+  var yDate = d.toISOString().split('T')[0];
+  status.textContent='⏳ Loading...'; status.className='';
+  db.collection('powerReadings').doc(yDate).get().then(function(snap) {
+    if (!snap.exists) {
+      status.textContent='⚠ No data for '+yDate+'. Enter manually.';
+      status.className='err'; return;
     }
-
-    // ========================================================
-    // LOADING
-    // ========================================================
-    window.addEventListener('load', () => setTimeout(() => document.getElementById('loadingScreen').classList.add('hide'), 800));
-
-    // ========================================================
-    // LANDING PAGE JS
-    // ========================================================
-    window.addEventListener('scroll', () => {
-        const nb = document.getElementById('navbar');
-        if (nb) nb.classList.toggle('scrolled', window.scrollY > 50);
+    var data = snap.data();
+    yest = {};
+    FIELDS.forEach(function(f) {
+      var id = f[0];
+      var raw = data.raw ? data.raw[id] : undefined;
+      var val = (raw!==undefined&&raw!=='') ? parseFloat(raw) : 0;
+      yest[id] = isNaN(val) ? 0 : val;
+      var el = document.getElementById('y-'+id);
+      if (el) el.textContent = (raw!==undefined&&raw!=='') ? raw : '—';
     });
-    const hamburger = document.getElementById('hamburger');
-    hamburger.addEventListener('click', () => { hamburger.classList.toggle('active'); document.getElementById('navLinks').classList.toggle('open'); });
-    document.querySelectorAll('#navLinks a').forEach(l => l.addEventListener('click', () => { hamburger.classList.remove('active'); document.getElementById('navLinks').classList.remove('open'); }));
-    // Counter animation
-    const counters = document.querySelectorAll('.stat-number');
-    const cObs = new IntersectionObserver((entries) => {
-        entries.forEach(e => { if (e.isIntersecting) { const el = e.target, t = +el.dataset.target, s = t / 125; let c = 0; const u = () => { c += s; if (c < t) { el.textContent = Math.floor(c) + '+'; requestAnimationFrame(u); } else el.textContent = t + '+'; }; u(); cObs.unobserve(el); } });
-    }, { threshold: 0.5 });
-    counters.forEach(c => cObs.observe(c));
+    status.textContent='✅ Yesterday loaded ('+yDate+')'; status.className='ok';
+    calc();
+  }).catch(function(e){ status.textContent='❌ '+e.message; status.className='err'; });
+}
 
-    // ========================================================
-    // AUTH STATE OBSERVER
-    // ========================================================
-    auth.onAuthStateChanged(async (user) => {
-        if (!user) return;
-        try {
-            const uDoc = await db.collection('users').doc(user.uid).get();
-            if (!uDoc.exists) return;
-            currentUser = { uid: user.uid, ...uDoc.data() };
-            currentRole = uDoc.data().role;
-            if (currentRole === 'owner') {
-                await initOwnerDashboard();
-                navigateTo('owner');
-            } else if (currentRole === 'member') {
-                await initMemberDashboard();
-                navigateTo('member');
-            }
-        } catch (e) { console.error(e); }
-    });
+// ── Save to BOTH Firebase and Sheets ─────────────────────────
+function saveAll() {
+  var date = document.getElementById('entry-date').value;
+  if (!date) { toast('⚠ Select a date first!'); return; }
+  showLoading(true);
+  var raw = {};
+  FIELDS.forEach(function(f){ raw[f[0]] = v(f[0]); });
+  var res = getResults();
 
-    // ========================================================
-    // LOGIN
-    // ========================================================
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const el = document.getElementById('loginError'), sl = document.getElementById('loginSuccess'), btn = document.getElementById('loginBtn');
-        el.classList.remove('show'); sl.classList.remove('show');
-        const email = document.getElementById('loginEmail').value.trim(), pass = document.getElementById('loginPassword').value;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...'; btn.disabled = true;
-        try {
-            const cred = await auth.signInWithEmailAndPassword(email, pass);
-            const uDoc = await db.collection('users').doc(cred.user.uid).get();
-            if (!uDoc.exists) { el.textContent = 'Profile not found.'; el.classList.add('show'); await auth.signOut(); btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled = false; return; }
-            sl.textContent = 'Success! Redirecting...'; sl.classList.add('show');
-        } catch (err) {
-            let msg = 'Login failed.';
-            if (err.code === 'auth/user-not-found') msg = 'No account with this email.';
-            else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') msg = 'Invalid email or password.';
-            else if (err.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
-            el.textContent = msg; el.classList.add('show');
-            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In'; btn.disabled = false;
-        }
-    });
-
-    // ========================================================
-    // SETUP OWNER
-    // ========================================================
-    document.getElementById('setupForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const el = document.getElementById('setupError'), sl = document.getElementById('setupSuccess'), btn = document.getElementById('setupBtn');
-        el.classList.remove('show'); sl.classList.remove('show');
-        const name = document.getElementById('setupName').value.trim(), email = document.getElementById('setupEmail').value.trim(), pass = document.getElementById('setupPassword').value;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...'; btn.disabled = true;
-        try {
-            const cred = await auth.createUserWithEmailAndPassword(email, pass);
-            await db.collection('users').doc(cred.user.uid).set({ email, role: 'owner', name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            sl.textContent = `Owner created! Email: ${email}`; sl.classList.add('show');
-            showToast('Owner account created!', 'success');
-            setTimeout(() => { auth.signOut(); navigateTo('login'); }, 2000);
-        } catch (err) {
-            el.textContent = err.code === 'auth/email-already-in-use' ? 'Email already registered.' : err.message; el.classList.add('show');
-        }
-        btn.innerHTML = '<i class="fas fa-user-shield"></i> Create Owner Account'; btn.disabled = false;
-    });
-
-    function doLogout() { if (confirm('Logout?')) auth.signOut().then(() => { currentUser = null; currentRole = null; allMembers = []; navigateTo('login'); }); }
-
-    // ========================================================
-    // OWNER DASHBOARD
-    // ========================================================
-    function showOwnerSection(id) {
-        document.querySelectorAll('#page-owner .content-section').forEach(s => { s.classList.remove('active-section'); s.style.display = 'none'; });
-        const sec = document.getElementById(id); sec.style.display = 'block'; sec.classList.add('active-section');
-        document.querySelectorAll('#ownerSidebar .sidebar-menu a').forEach(a => a.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById('ownerSidebar').classList.remove('open');
+  // 1. Save to Firebase
+  db.collection('powerReadings').doc(date).set({
+    date:date, raw:raw, results:res, savedAt:new Date().toISOString()
+  }).then(function(){
+    // 2. Submit to Sheets after Firebase succeeds
+    var payload = {action:'append', sheet:SHEET_NAME, date:date};
+    FIELDS.forEach(function(f){ payload['today_'+f[0]] = v(f[0]); });
+    payload.res_kwh=res.kwh; payload.res_kvah=res.kvah;
+    payload.res_solar_total=res.solar; payload.res_solexp=res.solexp; payload.res_solcons=res.solcons;
+    payload.res_crf=res.crf; payload.res_dml=res.dml; payload.res_door=res.door;
+    payload.res_cab_wet=res.cabwet; payload.res_cab_dry=res.cabdry; payload.res_cab_total=res.cabtotal;
+    payload.res_premix=res.premix; payload.res_thermo=res.thermo; payload.res_comp=res.comp;
+    payload.res_agr=res.agr; payload.res_spm=res.spm; payload.res_n2=res.n2;
+    payload.res_lighting_shop=res.lighting;
+    payload.res_chiller=res.chiller; payload.res_ahu=res.ahu; payload.res_stp=res.stp;
+    payload.res_litwh=res.litwh;
+    payload.res_canteen=res.canteen; payload.res_vrf=res.vrf;
+    payload.res_street=res.street;
+    payload.res_rxd=res.rxd; payload.res_ups=res.ups; payload.res_rnd=res.rnd;
+    payload.res_other=res.other;
+    var params = new URLSearchParams(payload).toString();
+    return fetch(SCRIPT_URL+'?'+params);
+  }).then(function(r){ return r ? r.text() : ''; })
+  .then(function(text){
+    showLoading(false);
+    if (text && (text.indexOf('error')>=0 || text.indexOf('Error')>=0)) {
+      toast('✅ Firebase saved! ⚠ Sheets: '+text);
+    } else {
+      toast('✅ Saved to Firebase & Google Sheets!');
     }
+    loadAllData();
+  }).catch(function(e){
+    showLoading(false);
+    toast('❌ '+e.message);
+  });
+}
 
-    async function initOwnerDashboard() {
-        document.getElementById('ownerName').textContent = currentUser.name || 'Owner';
-        document.getElementById('ownerAvatar').textContent = (currentUser.name || 'O')[0].toUpperCase();
-        document.getElementById('ownerWelcome').textContent = currentUser.name || 'Owner';
-        await loadAllMembers();
-        await loadSentNotifs();
+// ── Delete ────────────────────────────────────────────────────
+function deleteRecord(date) {
+  if (!confirm('Delete record for '+date+'?')) return;
+  db.collection('powerReadings').doc(date).delete().then(function(){
+    toast('🗑 Deleted '+date); loadAllData();
+  });
+}
+
+// ── Load all data ─────────────────────────────────────────────
+function loadAllData() {
+  var oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear()-1);
+  var fromDate = oneYearAgo.toISOString().split('T')[0];
+  db.collection('powerReadings')
+    .where('date','>=',fromDate)
+    .orderBy('date','desc')
+    .get().then(function(snap){
+      allRecords=[];
+      snap.forEach(function(d){allRecords.push(d.data());});
+      renderAll(allRecords);
+    }).catch(function(e){console.error(e);});
+}
+
+function filterRecords(prefix) {
+  var from=document.getElementById(prefix+'-from').value;
+  var to=document.getElementById(prefix+'-to').value;
+  return allRecords.filter(function(r){return(!from||r.date>=from)&&(!to||r.date<=to);});
+}
+function applyFilter(prefix) {
+  var filtered=filterRecords(prefix);
+  if(prefix==='raw') renderRawTable(filtered);
+  if(prefix==='total') renderTotalTable(filtered);
+  if(prefix==='hist') renderHistory(filtered);
+}
+function resetFilter(prefix) { setDefaultRange(prefix); applyFilter(prefix); }
+function renderAll(records) { renderRawTable(records); renderTotalTable(records); renderHistory(records); }
+
+function renderRawTable(records) {
+  var head=document.getElementById('raw-head'),body=document.getElementById('raw-body');
+  if(!records.length){head.innerHTML='';body.innerHTML='<tr><td class="no-data">No records found</td></tr>';return;}
+  var sorted=[].concat(records).sort(function(a,b){return a.date.localeCompare(b.date);});
+  head.innerHTML='<th>Parameter</th>'+sorted.map(function(r){return'<th>'+r.date+'</th>';}).join('');
+  body.innerHTML=FIELDS.map(function(f){
+    var id=f[0],label=f[1];
+    return'<tr><td>'+label+'</td>'+sorted.map(function(r){
+      return'<td>'+(r.raw&&r.raw[id]!==undefined?r.raw[id]:'—')+'</td>';
+    }).join('')+'</tr>';
+  }).join('');
+}
+
+function renderTotalTable(records) {
+  var head=document.getElementById('total-head'),body=document.getElementById('total-body');
+  if(!records.length){head.innerHTML='';body.innerHTML='<tr><td class="no-data">No records found</td></tr>';return;}
+  var sorted=[].concat(records).sort(function(a,b){return a.date.localeCompare(b.date);});
+  head.innerHTML='<th>Parameter</th>'+sorted.map(function(r){return'<th>'+r.date+'</th>';}).join('');
+  body.innerHTML=TOTAL_LABELS.map(function(tl){
+    var id=tl[0],label=tl[1];
+    return'<tr><td>'+label+'</td>'+sorted.map(function(r){
+      return'<td>'+(r.results&&r.results[id]!==undefined?Number(r.results[id]).toFixed(2):'—')+'</td>';
+    }).join('')+'</tr>';
+  }).join('');
+}
+
+function renderHistory(records) {
+  var body=document.getElementById('history-body');
+  if(!records.length){body.innerHTML='<tr><td colspan="29" class="no-data">No records found</td></tr>';return;}
+  body.innerHTML=records.map(function(r){
+    var res=r.results||{};
+    function f(k){return res[k]!==undefined?Number(res[k]).toFixed(0):'—';}
+    return'<tr><td><strong>'+r.date+'</strong></td>'
+      +'<td>'+f('kwh')+'</td><td>'+f('kvah')+'</td><td>'+f('solar')+'</td>'
+      +'<td>'+f('crf')+'</td><td>'+f('dml')+'</td><td>'+f('door')+'</td>'
+      +'<td>'+f('cabwet')+'</td><td>'+f('cabdry')+'</td><td>'+f('cabtotal')+'</td>'
+      +'<td>'+f('premix')+'</td><td>'+f('thermo')+'</td><td>'+f('comp')+'</td>'
+      +'<td>'+f('agr')+'</td><td>'+f('spm')+'</td><td>'+f('n2')+'</td>'
+      +'<td>'+f('lighting')+'</td><td>'+f('chiller')+'</td><td>'+f('ahu')+'</td>'
+      +'<td>'+f('stp')+'</td><td>'+f('litwh')+'</td>'
+      +'<td>'+f('canteen')+'</td><td>'+f('vrf')+'</td><td>'+f('street')+'</td>'
+      +'<td>'+f('rxd')+'</td><td>'+f('ups')+'</td><td>'+f('rnd')+'</td><td>'+f('other')+'</td>'
+      +'<td><button class="del-btn" onclick="deleteRecord(\''+r.date+'\')">Delete</button></td></tr>';
+  }).join('');
+}
+
+function showView(view) {
+  ['entry','raw','total','history'].forEach(function(vw){
+    document.getElementById(vw+'-view').style.display=(vw===view)?'block':'none';
+    document.getElementById('tab-'+vw).classList.toggle('active',vw===view);
+  });
+  if(view==='raw'||view==='total'||view==='history') loadAllData();
+}
+
+function resetForm() {
+  if(!confirm('Clear all today\'s readings?')) return;
+  document.querySelectorAll('input[type="number"]').forEach(function(i){i.value='';});
+  document.querySelectorAll('.result').forEach(function(el){el.textContent='—';});
+  document.querySelectorAll('.yest-val').forEach(function(el){el.textContent='—';});
+  yest={};
+  document.getElementById('fetch-status').textContent='Select date then load yesterday\'s readings.';
+  document.getElementById('fetch-status').className='';
+  toast('Form cleared.');
+}
+
+function setDefaultRange(prefix) {
+  var to=new Date(),from=new Date();
+  from.setFullYear(from.getFullYear()-1);
+  document.getElementById(prefix+'-from').value=from.toISOString().split('T')[0];
+  document.getElementById(prefix+'-to').value=to.toISOString().split('T')[0];
+}
+
+// ── Auth state listener — auto login if session persists ──────
+window.onload = function() {
+  setInterval(function(){
+    var cl = document.getElementById('clock');
+    if(cl) cl.textContent=new Date().toLocaleTimeString('en-IN');
+  },1000);
+
+  auth.onAuthStateChanged(function(user) {
+    showLoading(false);
+    if (user) {
+      showApp(user.email);
+    } else {
+      document.getElementById('login-page').style.display='flex';
+      document.getElementById('app-page').style.display='none';
     }
-
-    async function loadAllMembers() {
-        const snap = await db.collection('members').orderBy('createdAt', 'desc').get();
-        allMembers = []; snap.forEach(d => allMembers.push({ id: d.id, ...d.data() }));
-        const active = allMembers.filter(m => m.status === 'active').length;
-        document.getElementById('oTotalMembers').textContent = allMembers.length;
-        document.getElementById('oActiveMembers').textContent = active;
-        document.getElementById('oExpiredMembers').textContent = allMembers.length - active;
-        renderRecentMembers();
-        renderAllMembers();
-        populateDropdowns();
-    }
-
-    function renderRecentMembers() {
-        const tb = document.getElementById('oRecentTable'), r = allMembers.slice(0, 5);
-        if (!r.length) { tb.innerHTML = '<tr><td colspan="4"><div class="empty-state"><i class="fas fa-users"></i><p>No members</p></div></td></tr>'; return; }
-        tb.innerHTML = r.map(m => `<tr><td><div class="member-info"><div class="member-avatar">${(m.name||'M')[0]}</div>${m.name}</div></td><td>${m.phone||'-'}</td><td>${m.plan||'-'}</td><td><span class="badge ${m.status==='active'?'badge-active':'badge-inactive'}">${m.status}</span></td></tr>`).join('');
-    }
-
-    function renderAllMembers() {
-        const tb = document.getElementById('oAllTable'), f = document.getElementById('oFilter').value, s = (document.getElementById('oSearch').value||'').toLowerCase();
-        let list = [...allMembers];
-        if (f !== 'all') list = list.filter(m => m.status === f);
-        if (s) list = list.filter(m => (m.name||'').toLowerCase().includes(s)||(m.email||'').toLowerCase().includes(s)||(m.phone||'').includes(s));
-        if (!list.length) { tb.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-search"></i><p>No members found</p></div></td></tr>'; return; }
-        tb.innerHTML = list.map(m => `<tr><td><div class="member-info"><div class="member-avatar">${(m.name||'M')[0]}</div>${m.name}</div></td><td>${m.email||'-'}</td><td>${m.phone||'-'}</td><td>${m.plan||'-'}</td><td><span class="badge ${m.status==='active'?'badge-active':'badge-inactive'}">${m.status}</span></td><td><button class="action-btn view" onclick="viewMember('${m.id}')"><i class="fas fa-eye"></i></button><button class="action-btn edit" onclick="toggleStatus('${m.id}','${m.status}')"><i class="fas fa-${m.status==='active'?'ban':'check'}"></i></button><button class="action-btn delete" onclick="deleteMember('${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-    }
-
-    function populateDropdowns() {
-        ['routineMemberFilter','routineMember','notifTarget'].forEach(id => {
-            const el = document.getElementById(id); if(!el) return;
-            const keep = id === 'notifTarget' ? 2 : 1;
-            while (el.options.length > keep) el.remove(keep);
-            allMembers.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = `${m.name} (${m.email})`; el.appendChild(o); });
-        });
-    }
-
-    // ADD MEMBER
-    function autoGenPass() {
-        const c = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!'; let p = '';
-        for (let i = 0; i < 10; i++) p += c[Math.floor(Math.random() * c.length)];
-        document.getElementById('mPassword').value = p;
-    }
-
-    document.getElementById('addMemberForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const err = document.getElementById('addMemberError'), suc = document.getElementById('addMemberSuccess'), btn = document.getElementById('addMemberBtn');
-        err.classList.remove('show'); suc.classList.remove('show'); document.getElementById('credentialDisplay').style.display = 'none';
-        const data = { name: document.getElementById('mName').value.trim(), email: document.getElementById('mEmail').value.trim(), phone: document.getElementById('mPhone').value.trim(), age: +document.getElementById('mAge').value, gender: document.getElementById('mGender').value, address: document.getElementById('mAddress').value.trim(), plan: document.getElementById('mPlan').value, duration: +document.getElementById('mDuration').value, notes: document.getElementById('mNotes').value.trim() };
-        const pass = document.getElementById('mPassword').value;
-        if (pass.length < 6) { err.textContent = 'Password min 6 chars.'; err.classList.add('show'); return; }
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...'; btn.disabled = true;
-        try {
-            const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: data.email, password: pass, returnSecureToken: false }) });
-            const json = await res.json();
-            if (json.error) throw new Error(json.error.message);
-            const uid = json.localId, start = new Date(), end = new Date();
-            end.setMonth(end.getMonth() + data.duration);
-            await db.collection('members').doc(uid).set({ ...data, status: 'active', startDate: firebase.firestore.Timestamp.fromDate(start), endDate: firebase.firestore.Timestamp.fromDate(end), createdAt: firebase.firestore.FieldValue.serverTimestamp(), createdBy: currentUser.uid });
-            await db.collection('users').doc(uid).set({ email: data.email, role: 'member', name: data.name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            document.getElementById('credName').textContent = data.name;
-            document.getElementById('credEmail').textContent = data.email;
-            document.getElementById('credPass').textContent = pass;
-            document.getElementById('credentialDisplay').style.display = 'block';
-            suc.textContent = 'Member registered!'; suc.classList.add('show');
-            showToast('Member added!', 'success');
-            document.getElementById('addMemberForm').reset();
-            await loadAllMembers();
-        } catch (error) {
-            let msg = 'Registration failed.';
-            if (error.message.includes('EMAIL_EXISTS')) msg = 'Email already registered.';
-            else if (error.message.includes('WEAK_PASSWORD')) msg = 'Weak password.';
-            err.textContent = msg; err.classList.add('show'); showToast(msg, 'error');
-        }
-        btn.innerHTML = '<i class="fas fa-user-plus"></i> Register Member'; btn.disabled = false;
-    });
-
-    function copyCreds() {
-        const t = `PowerFit Credentials\nName: ${document.getElementById('credName').textContent}\nEmail: ${document.getElementById('credEmail').textContent}\nPassword: ${document.getElementById('credPass').textContent}`;
-        navigator.clipboard.writeText(t).then(() => showToast('Copied!', 'success')).catch(() => showToast('Copy failed', 'error'));
-    }
-
-    function viewMember(id) {
-        const m = allMembers.find(x => x.id === id); if (!m) return;
-        document.getElementById('memberModalBody').innerHTML = `<div class="profile-card"><div class="profile-avatar">${(m.name||'M')[0]}</div><h2>${m.name}</h2><div class="member-id">ID: ${id.substring(0,8).toUpperCase()}</div><span class="badge ${m.status==='active'?'badge-active':'badge-inactive'}">${m.status}</span><div class="profile-details"><div class="profile-detail-item"><span class="label">Email</span><span class="value">${m.email}</span></div><div class="profile-detail-item"><span class="label">Phone</span><span class="value">${m.phone||'-'}</span></div><div class="profile-detail-item"><span class="label">Age/Gender</span><span class="value">${m.age||'-'} / ${m.gender||'-'}</span></div><div class="profile-detail-item"><span class="label">Plan</span><span class="value">${m.plan||'-'} (${m.duration||'-'} mo)</span></div><div class="profile-detail-item"><span class="label">Start</span><span class="value">${m.startDate?new Date(m.startDate.toDate()).toLocaleDateString():'-'}</span></div><div class="profile-detail-item"><span class="label">End</span><span class="value">${m.endDate?new Date(m.endDate.toDate()).toLocaleDateString():'-'}</span></div><div class="profile-detail-item"><span class="label">Notes</span><span class="value">${m.notes||'-'}</span></div></div></div>`;
-        document.getElementById('memberModal').classList.add('show');
-    }
-
-    async function toggleStatus(id, cur) {
-        const ns = cur === 'active' ? 'inactive' : 'active';
-        if (!confirm(`Set member as ${ns}?`)) return;
-        await db.collection('members').doc(id).update({ status: ns });
-        showToast(`Status: ${ns}`, 'success'); await loadAllMembers();
-    }
-
-    async function deleteMember(id) {
-        if (!confirm('Delete this member permanently?')) return;
-        await db.collection('members').doc(id).delete();
-        await db.collection('users').doc(id).delete();
-        const rSnap = await db.collection('routines').where('memberId','==',id).get();
-        const b = db.batch(); rSnap.forEach(d => b.delete(d.ref)); await b.commit();
-        showToast('Deleted', 'success'); await loadAllMembers();
-    }
-
-    // ROUTINES
-    async function loadMemberRoutines(mid) {
-        const d = document.getElementById('routineDisplay');
-        if (!mid) { d.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>Select a member</h3></div>'; return; }
-        d.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading...</p></div>';
-        const snap = await db.collection('routines').where('memberId','==',mid).orderBy('dayOrder').get();
-        if (snap.empty) { d.innerHTML = '<div class="empty-state"><i class="fas fa-clipboard-list"></i><h3>No routines</h3><p>Click Assign Routine to add</p></div>'; return; }
-        let h = ''; snap.forEach(doc => { const r = doc.data(); h += `<div class="routine-card"><div style="display:flex;justify-content:space-between;align-items:center"><div class="day">${r.day}</div><button class="action-btn delete" onclick="deleteRoutine('${doc.id}','${mid}')"><i class="fas fa-trash"></i></button></div><div>${r.exercises.map(e=>`<div class="exercise-item"><span class="exercise-name">${e.name}</span><span class="exercise-sets">${e.sets}</span></div>`).join('')}</div></div>`; });
-        d.innerHTML = h;
-    }
-
-    function addExRow() {
-        const l = document.getElementById('exercisesList'), r = document.createElement('div');
-        r.className = 'form-row exercise-row';
-        r.innerHTML = `<div class="form-group"><label>Exercise</label><input type="text" class="ex-name" placeholder="e.g. Squats" required></div><div class="form-group"><label>Sets x Reps</label><div style="display:flex;gap:8px"><input type="text" class="ex-sets" placeholder="e.g. 3x15" required style="flex:1"><button type="button" onclick="this.closest('.exercise-row').remove()" style="background:rgba(255,23,68,0.15);color:var(--danger);border:none;border-radius:var(--radius-sm);width:40px;cursor:pointer"><i class="fas fa-times"></i></button></div></div>`;
-        l.appendChild(r);
-    }
-
-    async function saveRoutine() {
-        const mid = document.getElementById('routineMember').value, day = document.getElementById('routineDay').value;
-        if (!mid || !day) { showToast('Select member & day', 'error'); return; }
-        const ns = document.querySelectorAll('#exercisesList .ex-name'), ss = document.querySelectorAll('#exercisesList .ex-sets'), exs = [];
-        for (let i = 0; i < ns.length; i++) { if (ns[i].value.trim() && ss[i].value.trim()) exs.push({ name: ns[i].value.trim(), sets: ss[i].value.trim() }); }
-        if (!exs.length) { showToast('Add exercises', 'error'); return; }
-        const days = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-        const existing = await db.collection('routines').where('memberId','==',mid).where('day','==',day).get();
-        if (!existing.empty) await db.collection('routines').doc(existing.docs[0].id).update({ exercises: exs, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-        else await db.collection('routines').add({ memberId: mid, day, dayOrder: days.indexOf(day), exercises: exs, createdAt: firebase.firestore.FieldValue.serverTimestamp(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
-        showToast('Routine saved!', 'success');
-        document.getElementById('routineModal').classList.remove('show');
-        if (document.getElementById('routineMemberFilter').value === mid) loadMemberRoutines(mid);
-    }
-
-    async function deleteRoutine(rid, mid) { if (!confirm('Delete?')) return; await db.collection('routines').doc(rid).delete(); showToast('Deleted', 'success'); loadMemberRoutines(mid); }
-
-    // NOTIFICATIONS (Owner)
-    document.getElementById('notifForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const target = document.getElementById('notifTarget').value, title = document.getElementById('notifTitle').value.trim(), msg = document.getElementById('notifMessage').value.trim(), type = document.getElementById('notifType').value;
-        if (!target || !title || !msg) { showToast('Fill all fields', 'error'); return; }
-        if (target === 'all') {
-            const b = db.batch(); allMembers.forEach(m => { const r = db.collection('notifications').doc(); b.set(r, { memberId: m.id, memberName: m.name, title, message: msg, type, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp(), sentBy: currentUser.uid }); }); await b.commit();
-            showToast(`Sent to ${allMembers.length} members!`, 'success');
-        } else {
-            const m = allMembers.find(x => x.id === target);
-            await db.collection('notifications').add({ memberId: target, memberName: m?m.name:'Member', title, message: msg, type, read: false, createdAt: firebase.firestore.FieldValue.serverTimestamp(), sentBy: currentUser.uid });
-            showToast('Sent!', 'success');
-        }
-        document.getElementById('notifForm').reset(); loadSentNotifs();
-        const ns = await db.collection('notifications').get(); document.getElementById('oTotalNotifs').textContent = ns.size;
-    });
-
-    async function loadSentNotifs() {
-        const snap = await db.collection('notifications').orderBy('createdAt','desc').limit(20).get();
-        document.getElementById('oTotalNotifs').textContent = snap.size;
-        const c = document.getElementById('sentNotifs');
-        if (snap.empty) { c.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>None</h3></div>'; return; }
-        let h = ''; snap.forEach(d => { const n = d.data(), t = n.createdAt?new Date(n.createdAt.toDate()).toLocaleString():'Just now'; const icons={routine:'dumbbell',payment:'credit-card',announcement:'bullhorn',general:'bell'}; h += `<div class="notification-item"><div class="notification-icon"><i class="fas fa-${icons[n.type]||'bell'}"></i></div><div class="notification-content"><h4>${n.title}</h4><p>${n.message}</p><div class="time">To: ${n.memberName||'?'} • ${t}</div></div></div>`; });
-        c.innerHTML = h;
-    }
-
-    async function sendDailyRoutineNotifs() {
-        const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'], today=days[new Date().getDay()];
-        const snap = await db.collection('routines').where('day','==',today).get();
-        if(snap.empty){showToast(`No routines for ${today}`,'info');return;}
-        const b=db.batch(); let cnt=0;
-        snap.forEach(d=>{const r=d.data(),m=allMembers.find(x=>x.id===r.memberId);if(!m||m.status!=='active')return; const el=r.exercises.map(e=>`${e.name}: ${e.sets}`).join('\n'); b.set(db.collection('notifications').doc(),{memberId:r.memberId,memberName:m.name,title:`🏋️ ${today}'s Workout`,message:el,type:'routine',read:false,createdAt:firebase.firestore.FieldValue.serverTimestamp(),sentBy:currentUser.uid}); cnt++;});
-        if(cnt>0){await b.commit();showToast(`Sent to ${cnt} members!`,'success');loadSentNotifs();}else showToast('No active members with routines today','info');
-    }
-
-    // ========================================================
-    // MEMBER DASHBOARD
-    // ========================================================
-    function showMemberSection(id) {
-        document.querySelectorAll('#page-member .content-section').forEach(s => { s.classList.remove('active-section'); s.style.display = 'none'; });
-        document.getElementById(id).style.display = 'block'; document.getElementById(id).classList.add('active-section');
-        document.querySelectorAll('#memberSidebar .sidebar-menu a').forEach(a => a.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.getElementById('memberSidebar').classList.remove('open');
-    }
-
-    async function initMemberDashboard() {
-        const name = currentUser.name || 'Member';
-        document.getElementById('memName').textContent = name;
-        document.getElementById('memAvatar').textContent = name[0].toUpperCase();
-        document.getElementById('memWelcome').textContent = name.split(' ')[0];
-        // Get member data
-        const mDoc = await db.collection('members').doc(currentUser.uid).get();
-        if (mDoc.exists) memberData = { id: mDoc.id, ...mDoc.data() };
-        // Plan & days left
-        if (memberData) {
-            document.getElementById('mPlan').textContent = memberData.plan || '-';
-            if (memberData.endDate) {
-                const diff = Math.ceil((memberData.endDate.toDate() - new Date()) / 86400000);
-                document.getElementById('mDaysLeft').textContent = diff > 0 ? diff : 'Expired';
-            }
-        }
-        // Load routines & notifs
-        await loadMyRoutines();
-        await loadMyNotifs();
-        renderMyProfile();
-        // Day
-        const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'], today=days[new Date().getDay()];
-        document.getElementById('mTodayDay').textContent = today;
-        // Real-time notifs
-        db.collection('notifications').where('memberId','==',currentUser.uid).where('read','==',false).onSnapshot(snap=>{
-            const u=snap.size; document.getElementById('mUnread').textContent=u;
-            const b=document.getElementById('mNotifBadge'); if(u>0){b.textContent=u;b.style.display='inline'}else b.style.display='none';
-        });
-        if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
-    }
-
-    async function loadMyRoutines() {
-        const snap = await db.collection('routines').where('memberId','==',currentUser.uid).orderBy('dayOrder').get();
-        memberRoutines = []; snap.forEach(d => memberRoutines.push({ id: d.id, ...d.data() }));
-        const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'], today=days[new Date().getDay()];
-        const tr = memberRoutines.find(r => r.day === today), c = document.getElementById('mTodayRoutine');
-        if (tr && tr.exercises.length) {
-            document.getElementById('mTodayEx').textContent = tr.exercises.length;
-            c.innerHTML = `<div class="routine-card"><div class="day">${tr.day}</div>${tr.exercises.map(e=>`<div class="exercise-item"><span class="exercise-name"><i class="fas fa-circle" style="font-size:6px;margin-right:8px;color:var(--primary)"></i>${e.name}</span><span class="exercise-sets">${e.sets}</span></div>`).join('')}</div>`;
-        } else {
-            document.getElementById('mTodayEx').textContent = today==='Sunday'?'Rest':'0';
-            c.innerHTML = `<div class="empty-state"><i class="fas fa-${today==='Sunday'?'bed':'clipboard-list'}"></i><h3>${today==='Sunday'?'Rest Day! 😴':'No routine for today'}</h3></div>`;
-        }
-        // Highlight day tab
-        document.querySelectorAll('#mDayTabs .day-tab').forEach(t => t.classList.remove('active'));
-        showDayRoutine(today);
-    }
-
-    function showDayRoutine(day, tabEl) {
-        document.querySelectorAll('#mDayTabs .day-tab').forEach(t => t.classList.remove('active'));
-        if (tabEl) tabEl.classList.add('active');
-        else document.querySelectorAll('#mDayTabs .day-tab').forEach(t => { if(t.textContent === day.substring(0,3)) t.classList.add('active'); });
-        const r = memberRoutines.find(x => x.day === day), d = document.getElementById('mWeeklyRoutine');
-        if (r && r.exercises.length) d.innerHTML = `<div class="routine-card"><div class="day">${r.day}'s Workout</div>${r.exercises.map((e,i)=>`<div class="exercise-item"><span class="exercise-name"><strong style="color:var(--primary);margin-right:8px">${i+1}.</strong>${e.name}</span><span class="exercise-sets">${e.sets}</span></div>`).join('')}</div>`;
-        else d.innerHTML = `<div class="empty-state"><i class="fas fa-${day==='Sunday'?'bed':'clipboard-list'}"></i><h3>${day==='Sunday'?'Rest Day! 😴':'No routine for '+day}</h3></div>`;
-    }
-
-    async function loadMyNotifs() {
-        const snap = await db.collection('notifications').where('memberId','==',currentUser.uid).orderBy('createdAt','desc').limit(50).get();
-        memberNotifs = []; snap.forEach(d => memberNotifs.push({ id: d.id, ...d.data() }));
-        const unread = memberNotifs.filter(n => !n.read).length;
-        document.getElementById('mUnread').textContent = unread;
-        renderNotifList('mRecentNotifs', memberNotifs.slice(0, 5));
-        renderNotifList('mAllNotifs', memberNotifs);
-    }
-
-    function renderNotifList(cid, list) {
-        const c = document.getElementById(cid);
-        if (!list.length) { c.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>No notifications</h3></div>'; return; }
-        const icons = { routine:'dumbbell', payment:'credit-card', announcement:'bullhorn', general:'bell' };
-        c.innerHTML = list.map(n => { const t = n.createdAt?new Date(n.createdAt.toDate()).toLocaleString():'Just now'; return `<div class="notification-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')"><div class="notification-icon"><i class="fas fa-${icons[n.type]||'bell'}"></i></div><div class="notification-content"><h4>${n.title}</h4><p>${n.message}</p><div class="time"><i class="fas fa-clock"></i> ${t}</div></div></div>`; }).join('');
-    }
-
-    async function markRead(nid) { await db.collection('notifications').doc(nid).update({read:true}); await loadMyNotifs(); }
-    async function markAllRead() {
-        const b = db.batch(); memberNotifs.filter(n=>!n.read).forEach(n=>b.update(db.collection('notifications').doc(n.id),{read:true}));
-        await b.commit(); showToast('All marked read','success'); await loadMyNotifs();
-    }
-
-    function renderMyProfile() {
-        const c = document.getElementById('mProfileCard');
-        if (!memberData) { c.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Profile not found</h3></div>'; return; }
-        const m = memberData;
-        c.innerHTML = `<div class="profile-avatar">${(m.name||'M')[0]}</div><h2>${m.name}</h2><div class="member-id">ID: ${m.id.substring(0,8).toUpperCase()}</div><span class="badge ${m.status==='active'?'badge-active':'badge-inactive'}">${m.status}</span><div class="profile-details"><div class="profile-detail-item"><span class="label">Email</span><span class="value">${m.email}</span></div><div class="profile-detail-item"><span class="label">Phone</span><span class="value">${m.phone||'-'}</span></div><div class="profile-detail-item"><span class="label">Age / Gender</span><span class="value">${m.age||'-'} / ${m.gender||'-'}</span></div><div class="profile-detail-item"><span class="label">Plan</span><span class="value">${m.plan||'-'} (${m.duration||'-'} mo)</span></div><div class="profile-detail-item"><span class="label">Start</span><span class="value">${m.startDate?new Date(m.startDate.toDate()).toLocaleDateString():'-'}</span></div><div class="profile-detail-item"><span class="label">End</span><span class="value">${m.endDate?new Date(m.endDate.toDate()).toLocaleDateString():'-'}</span></div><div class="profile-detail-item"><span class="label">Address</span><span class="value">${m.address||'-'}</span></div></div>`;
-    }
-    </script>
+  });
+};
+</script>
 </body>
 </html>
