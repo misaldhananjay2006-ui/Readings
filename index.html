@@ -201,8 +201,8 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
           <tr><td class="row-label">CRF</td><td><input type="number" id="crf-t" oninput="calc()"></td><td><div class="yest-val" id="y-crf">—</div></td><td><div class="result" id="r-crf">—</div></td></tr>
           <tr><td class="row-label">DML</td><td><input type="number" id="dml-t" oninput="calc()"></td><td><div class="yest-val" id="y-dml">—</div></td><td><div class="result" id="r-dml">—</div></td></tr>
           <tr><td class="row-label">Door Foaming Machine ★<small>×1000</small></td><td><input type="number" id="door-t" oninput="calc()"></td><td><div class="yest-val" id="y-door">—</div></td><td><div class="result" id="r-door">—</div></td></tr>
-          <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
-          <tr><td class="row-label">Cabinet Foaming — Dry</td><td><input type="number" id="cab-dry-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-dry">—</div></td><td><div class="result" id="r-cab-dry">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Dry</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-dry-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-dry">—</div></td><td><div class="result" id="r-cab-dry">—</div></td></tr>
           <tr class="total-row"><td colspan="3">Cabinet Foaming Total (Wet + Dry)</td><td><div class="result" id="r-cab-total">—</div></td></tr>
           <tr><td class="row-label">Pre Mix Area ★<small>×1000</small></td><td><input type="number" id="premix-t" oninput="calc()"></td><td><div class="yest-val" id="y-premix">—</div></td><td><div class="result" id="r-premix">—</div></td></tr>
           <tr><td class="row-label">Thermoforming Machine</td><td><input type="number" id="thermo-t" oninput="calc()"></td><td><div class="yest-val" id="y-thermo">—</div></td><td><div class="result" id="r-thermo">—</div></td></tr>
@@ -348,7 +348,7 @@ const TOTAL_LABELS = [
   ['kwh','KWH (×30)'],['kvah','KVAH (×30)'],
   ['solar','Solar Total'],['solexp','Solar Exported'],['solcons','Solar Consumed'],
   ['crf','CRF'],['dml','DML'],['door','Door Foaming'],
-  ['cabwet','Cabinet Dry'],['cabdry','Cabinet Wet'],['cabtotal','Cabinet Total'],
+  ['cabdry','Cabinet Dry'],['cabwet','Cabinet Wet'],['cabtotal','Cabinet Total'],
   ['premix','Pre Mix'],['thermo','Thermoforming'],['comp','Compressors'],
   ['agr','Agramkow'],['spm','SPM'],['n2','N2 Generator'],
   ['lighting','Lighting Shop Floor'],
@@ -395,8 +395,8 @@ function calc() {
   setR('door', (v('door')-y('door'))*1000);
   var cabwet = v('cab-dry')-y('cab-dry');
   var cabdry = v('cab-wet')-y('cab-wet');
-  setR('cab-dry', cabwet);
-  setR('cab-wet', cabdry);
+  setR('cab-dry', cabdry);
+  setR('cab-wet', cabwet);
   setR('cab-total', cabdry + cabwet);
   setR('premix',  (v('premix')-y('premix'))*1000);
   setR('thermo',  v('thermo') -y('thermo'));
