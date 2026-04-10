@@ -332,7 +332,7 @@ const FIELDS = [
   ['solexp','Solar Exported',1],['solcons','Solar Consumed',1],
   ['crf','CRF',1],['dml','DML',1],
   ['door','Door Foaming',1000],
-  ['cab-wet','Cabinet Wet',1],['cab-dry','Cabinet Dry',1],
+  ['cab-dry','Cabinet Dry',1],['cab-wet','Cabinet Wet',1],
   ['premix','Pre Mix',1000],['thermo','Thermoforming',1],
   ['comp','Compressors',1],['agr','Agramkow',1],['spm','SPM',1],
   ['n2','N2 Generator',1000],
@@ -348,7 +348,7 @@ const TOTAL_LABELS = [
   ['kwh','KWH (×30)'],['kvah','KVAH (×30)'],
   ['solar','Solar Total'],['solexp','Solar Exported'],['solcons','Solar Consumed'],
   ['crf','CRF'],['dml','DML'],['door','Door Foaming'],
-  ['cabwet','Cabinet Wet'],['cabdry','Cabinet Dry'],['cabtotal','Cabinet Total'],
+  ['cabwet','Cabinet Dry'],['cabdry','Cabinet Wet'],['cabtotal','Cabinet Total'],
   ['premix','Pre Mix'],['thermo','Thermoforming'],['comp','Compressors'],
   ['agr','Agramkow'],['spm','SPM'],['n2','N2 Generator'],
   ['lighting','Lighting Shop Floor'],
@@ -393,11 +393,11 @@ function calc() {
   setR('crf',  v('crf') -y('crf'));
   setR('dml',  v('dml') -y('dml'));
   setR('door', (v('door')-y('door'))*1000);
-  var cabwet = v('cab-wet')-y('cab-wet');
-  var cabdry = v('cab-dry')-y('cab-dry');
-  setR('cab-wet', cabwet);
-  setR('cab-dry', cabdry);
-  setR('cab-total', cabwet + cabdry);
+  var cabwet = v('cab-dry')-y('cab-dry');
+  var cabdry = v('cab-wet')-y('cab-wet');
+  setR('cab-dry', cabwet);
+  setR('cab-wet', cabdry);
+  setR('cab-total', cabdry + cabwet);
   setR('premix',  (v('premix')-y('premix'))*1000);
   setR('thermo',  v('thermo') -y('thermo'));
   setR('comp',    v('comp')   -y('comp'));
@@ -432,7 +432,7 @@ function getResults() {
     solar:s1+s2+s3, solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
     crf:v('crf')-y('crf'), dml:v('dml')-y('dml'),
     door:(v('door')-y('door'))*1000,
-    cabwet:cabwet, cabdry:cabdry, cabtotal:cabwet+cabdry,
+    cabdry:cabdry, cabwet:cabwet, cabtotal:cabwet+cabdry,
     premix:(v('premix')-y('premix'))*1000,
     thermo:v('thermo')-y('thermo'), comp:v('comp')-y('comp'),
     agr:v('agr')-y('agr'), spm:v('spm')-y('spm'),
