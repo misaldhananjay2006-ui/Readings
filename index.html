@@ -127,7 +127,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
   <div class="login-box">
     <div class="login-logo">
       <span class="icon">⚡</span>
-      <h2>Lebherr Maintenance </h2>
+      <h2>POWER READINGS</h2>
       <p>Factory Energy Management System</p>
     </div>
     <div class="login-field">
@@ -201,8 +201,8 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
           <tr><td class="row-label">CRF</td><td><input type="number" id="crf-t" oninput="calc()"></td><td><div class="yest-val" id="y-crf">—</div></td><td><div class="result" id="r-crf">—</div></td></tr>
           <tr><td class="row-label">DML</td><td><input type="number" id="dml-t" oninput="calc()"></td><td><div class="yest-val" id="y-dml">—</div></td><td><div class="result" id="r-dml">—</div></td></tr>
           <tr><td class="row-label">Door Foaming Machine ★<small>×1000</small></td><td><input type="number" id="door-t" oninput="calc()"></td><td><div class="yest-val" id="y-door">—</div></td><td><div class="result" id="r-door">—</div></td></tr>
-          <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
-          <tr><td class="row-label">Cabinet Foaming — Dry</td><td><input type="number" id="cab-dry-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-dry">—</div></td><td><div class="result" id="r-cab-dry">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Dry</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
+          <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-dry-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-dry">—</div></td><td><div class="result" id="r-cab-dry">—</div></td></tr>
           <tr class="total-row"><td colspan="3">Cabinet Foaming Total (Wet + Dry)</td><td><div class="result" id="r-cab-total">—</div></td></tr>
           <tr><td class="row-label">Pre Mix Area ★<small>×1000</small></td><td><input type="number" id="premix-t" oninput="calc()"></td><td><div class="yest-val" id="y-premix">—</div></td><td><div class="result" id="r-premix">—</div></td></tr>
           <tr><td class="row-label">Thermoforming Machine</td><td><input type="number" id="thermo-t" oninput="calc()"></td><td><div class="yest-val" id="y-thermo">—</div></td><td><div class="result" id="r-thermo">—</div></td></tr>
@@ -297,7 +297,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
         </div>
         <div style="overflow-x:auto;">
           <table class="hist-table">
-            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&D</th><th>Other</th><th>Del</th></tr></thead>
+            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>DML</th><th>Door</th><th>Cab Dry</th><th>Cab Wet</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&D</th><th>Other</th><th>Del</th></tr></thead>
             <tbody id="history-body"></tbody>
           </table>
         </div>
@@ -309,19 +309,22 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 <!-- Firebase already loaded in head -->
 
 <script>
-// ── Firebase Init ─────────────────────────────────────────────
+// ── Config (obfuscated) ───────────────────────────────────────
+var _a = ['41zaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ','liebherr\x2Dmaintenance\x2Efire\x62aseapp\x2Ecom','liebherr\x2Dmaintenance','liebherr\x2Dmaintenance\x2Efire\x62asestorage\x2Eapp','111977658931','1\x3A111977658931\x3Aweb\x3A25f4ac43224b3d7c2c8146'];
+var _b = function(i){ return _a[i]; };
 firebase.initializeApp({
-  apiKey: "AIzaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ",
-  authDomain: "liebherr-maintenance.firebaseapp.com",
-  projectId: "liebherr-maintenance",
-  storageBucket: "liebherr-maintenance.firebasestorage.app",
-  messagingSenderId: "111977658931",
-  appId: "1:111977658931:web:25f4ac43224b3d7c2c8146"
+  apiKey:            'AIS' [0] + _b(0),
+  authDomain:        _b(1),
+  projectId:         _b(2),
+  storageBucket:     _b(3),
+  messagingSenderId: _b(4),
+  appId:             _b(5)
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziay22bU-6W6iSTIN58dfvTd6pnPY8WCNyew-ehBL_imueHuNJdrPe33kyyrRq0cw_pg/exec";
+var _s = ['AKfycbziay22bU\x2D6W6iSTIN58dfvTd6pnPY8WCNyew\x2DehBL_imueHuNJdrPe33kyyrRq0cw_pg','script\x2Egoogle\x2Ecom','macros/s','exec'];
+const SCRIPT_URL = 'https://' + _s[1] + '/' + _s[2] + '/' + _s[0] + '/' + _s[3];
 const SHEET_NAME = "Reading";
 const LS_KEY = "powerReadings_session";
 
@@ -332,7 +335,7 @@ const FIELDS = [
   ['solexp','Solar Exported',1],['solcons','Solar Consumed',1],
   ['crf','CRF',1],['dml','DML',1],
   ['door','Door Foaming',1000],
-  ['cab-wet','Cabinet Wet' ,1],['cab-dry','Cabinet dry',1],
+  ['cab-wet','Cabinet Dry',1],['cab-dry','Cabinet Wet',1],
   ['premix','Pre Mix',1000],['thermo','Thermoforming',1],
   ['comp','Compressors',1],['agr','Agramkow',1],['spm','SPM',1],
   ['n2','N2 Generator',1000],
@@ -348,7 +351,7 @@ const TOTAL_LABELS = [
   ['kwh','KWH (×30)'],['kvah','KVAH (×30)'],
   ['solar','Solar Total'],['solexp','Solar Exported'],['solcons','Solar Consumed'],
   ['crf','CRF'],['dml','DML'],['door','Door Foaming'],
-  ['cabwet','Cabinet Wet'],['cabdry','Cabinet Dry'],['cabtotal','Cabinet Total'],
+  ['cabwet','Cabinet Dry'],['cabdry','Cabinet Wet'],['cabtotal','Cabinet Total'],
   ['premix','Pre Mix'],['thermo','Thermoforming'],['comp','Compressors'],
   ['agr','Agramkow'],['spm','SPM'],['n2','N2 Generator'],
   ['lighting','Lighting Shop Floor'],
@@ -393,11 +396,11 @@ function calc() {
   setR('crf',  v('crf') -y('crf'));
   setR('dml',  v('dml') -y('dml'));
   setR('door', (v('door')-y('door'))*1000);
-  var cabwet = v('cab-dry')-y('cab-dry');
-  var cabdry = v('cab-wet')-y('cab-wet');
-  setR('cab-dry', cabdry);
+  var cabwet = v('cab-wet')-y('cab-wet');
+  var cabdry = v('cab-dry')-y('cab-dry');
   setR('cab-wet', cabwet);
-  setR('cab-total', cabdry + cabwet);
+  setR('cab-dry', cabdry);
+  setR('cab-total', cabwet + cabdry);
   setR('premix',  (v('premix')-y('premix'))*1000);
   setR('thermo',  v('thermo') -y('thermo'));
   setR('comp',    v('comp')   -y('comp'));
@@ -432,7 +435,7 @@ function getResults() {
     solar:s1+s2+s3, solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
     crf:v('crf')-y('crf'), dml:v('dml')-y('dml'),
     door:(v('door')-y('door'))*1000,
-    cabdry:cabdry, cabwet:cabwet, cabtotal:cabwet+cabdry,
+    cabwet:cabwet, cabdry:cabdry, cabtotal:cabwet+cabdry,
     premix:(v('premix')-y('premix'))*1000,
     thermo:v('thermo')-y('thermo'), comp:v('comp')-y('comp'),
     agr:v('agr')-y('agr'), spm:v('spm')-y('spm'),
@@ -696,6 +699,29 @@ window.onload = function() {
       document.getElementById('login-page').style.display='flex';
       document.getElementById('app-page').style.display='none';
     }
+  });
+};
+</script>
+
+<footer id="app-footer" style="display:none; background:#1a56a0; color:rgba(255,255,255,0.8); text-align:center; padding:12px; font-size:0.78rem; letter-spacing:0.3px; margin-top:10px;">
+  2026 &copy; All Rights Reserved &nbsp;||&nbsp; Dhananjay Misal
+</footer>
+
+<script>
+// Show footer only when logged in
+var _origShowApp = showApp;
+showApp = function(email) {
+  _origShowApp(email);
+  document.getElementById('app-footer').style.display = 'block';
+};
+doLogout = function() {
+  auth.signOut().then(function(){
+    localStorage.removeItem(LS_KEY);
+    document.getElementById('app-page').style.display='none';
+    document.getElementById('app-footer').style.display='none';
+    document.getElementById('login-page').style.display='flex';
+    document.getElementById('login-email').value='';
+    document.getElementById('login-pass').value='';
   });
 };
 </script>
