@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; font-size: 14px; }
 
@@ -92,6 +93,10 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 .btn-save:hover { background: #144080; }
 .btn-sheets { background: #1a7a3a; color: white; }
 .btn-sheets:hover { background: #145e2d; }
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .btn-reset { background: #888; color: white; }
 .btn-reset:hover { background: #666; }
 .filter-bar { padding: 10px 16px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #eee; flex-wrap: wrap; }
@@ -252,10 +257,17 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
       </div>
 
       <div class="action-row">
-        <button class="btn btn-reset"  onclick="resetForm()">🔄 Reset</button>
-        <button class="btn btn-save"   onclick="saveAll()">💾 Save</button>
-      </div>
-    </div>
+  <button class="btn btn-reset" onclick="resetForm()">🔄 Reset</button>
+
+  <button class="btn btn-save" onclick="saveAll()">
+    💾 Save
+  </button>
+
+  <button class="btn btn-sheets" id="mail-btn"
+    onclick="sendMail()" disabled>
+    📧 Send Mail
+  </button>
+</div>
 
     <!-- RAW TABLE -->
     <div id="raw-view" style="display:none;">
@@ -320,6 +332,7 @@ firebase.initializeApp({
 });
 const db   = firebase.firestore();
 const auth = firebase.auth();
+emailjs.init("8-fbJXXpxM0uhcPo4");
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziay22bU-6W6iSTIN58dfvTd6pnPY8WCNyew-ehBL_imueHuNJdrPe33kyyrRq0cw_pg/exec";
 const SHEET_NAME = "Reading";
@@ -361,6 +374,7 @@ const TOTAL_LABELS = [
 
 let yest = {};
 let allRecords = [];
+let todaySaved = false;
 
 // ── Helpers ───────────────────────────────────────────────────
 function v(id) {
@@ -563,7 +577,11 @@ function saveAll() {
     if (text && (text.indexOf('error')>=0 || text.indexOf('Error')>=0)) {
       toast('✅ Firebase saved! ⚠ Sheets: '+text);
     } else {
-      toast('✅ Saved to Firebase & Google Sheets!');
+      todaySaved = true;
+
+document.getElementById('mail-btn').disabled = false;
+
+toast('✅ Saved to Firebase & Google Sheets!');
     }
     loadAllData();
   }).catch(function(e){
@@ -573,6 +591,84 @@ function saveAll() {
 }
 
 // ── Delete ────────────────────────────────────────────────────
+async function sendMail() {
+
+  if (!todaySaved) {
+    toast('⚠ Save readings first!');
+    return;
+  }
+
+  const date = document.getElementById('entry-date').value;
+
+  const res = getResults();
+
+  showLoading(true);
+
+const templateParams = {
+  date: date,
+
+  kwh: res.kwh.toFixed(2),
+  kvah: res.kvah.toFixed(2),
+
+  solar: res.solar.toFixed(2),
+  solexp: res.solexp.toFixed(2),
+  solcons: res.solcons.toFixed(2),
+
+  crf: res.crf.toFixed(2),
+  dml: res.dml.toFixed(2),
+  door: res.door.toFixed(2),
+
+  cabwet: res.cabwet.toFixed(2),
+  cabdry: res.cabdry.toFixed(2),
+  cabtotal: res.cabtotal.toFixed(2),
+
+  premix: res.premix.toFixed(2),
+  thermo: res.thermo.toFixed(2),
+  comp: res.comp.toFixed(2),
+  agr: res.agr.toFixed(2),
+  spm: res.spm.toFixed(2),
+  n2: res.n2.toFixed(2),
+
+  lighting: res.lighting.toFixed(2),
+
+  chiller: res.chiller.toFixed(2),
+  ahu: res.ahu.toFixed(2),
+  stp: res.stp.toFixed(2),
+  litwh: res.litwh.toFixed(2),
+  canteen: res.canteen.toFixed(2),
+  vrf: res.vrf.toFixed(2),
+  street: res.street.toFixed(2),
+
+  rxd: res.rxd.toFixed(2),
+  ups: res.ups.toFixed(2),
+  rnd: res.rnd.toFixed(2),
+
+  other: res.other.toFixed(2)
+};
+
+  emailjs.send(
+    "service_w6aoixu",
+    "template_mhc3xgs",
+    templateParams
+  )
+  .then(function () {
+
+    showLoading(false);
+
+    toast("📧 Mail sent successfully!");
+
+  })
+  .catch(function (error) {
+
+    showLoading(false);
+
+    toast("❌ Mail failed!");
+
+    console.error(error);
+
+  });
+
+}
 function deleteRecord(date) {
   if (!confirm('Delete record for '+date+'?')) return;
   db.collection('powerReadings').doc(date).delete().then(function(){
