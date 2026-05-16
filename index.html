@@ -140,11 +140,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 .report-total-item .big-label { font-size: 0.72rem; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
 
 .report-actions { display: flex; gap: 10px; align-items: center; margin: 14px 0 4px; flex-wrap: wrap; }
-.email-input-wrap { display: flex; gap: 8px; align-items: center; flex: 1; min-width: 260px; }
-.email-input-wrap label { font-size: 0.82rem; font-weight: bold; white-space: nowrap; }
-.email-input-wrap input[type="email"] { flex: 1; border: 1px solid #ccc; border-radius: 4px; padding: 7px 10px; font-size: 0.85rem; }
-.email-input-wrap input[type="email"]:focus { outline: none; border-color: #7b2d8b; }
-.btn-email { background: linear-gradient(135deg, #7b2d8b, #4a1060); color: white; padding: 8px 20px; font-size: 0.85rem; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; white-space: nowrap; }
+.btn-email { background: linear-gradient(135deg, #7b2d8b, #4a1060); color: white; padding: 10px 28px; font-size: 0.92rem; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; white-space: nowrap; }
 .btn-email:hover { opacity: 0.88; }
 .btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-load-report { background: linear-gradient(135deg, #7b2d8b, #4a1060); color: white; padding: 8px 20px; font-size: 0.85rem; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
@@ -399,19 +395,10 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
         </div>
 
         <!-- Email send section -->
-        <div style="background:white;border:1px solid #ddd;border-radius:6px;padding:14px 16px;margin-bottom:20px;">
-          <div style="font-weight:bold;font-size:0.88rem;color:#333;margin-bottom:10px;">📧 Send Report via Email</div>
-          <div class="report-actions">
-            <div class="email-input-wrap">
-              <label>To:</label>
-              <input type="email" id="report-email" placeholder="recipient@example.com">
-            </div>
-            <button class="btn-email" id="send-email-btn" onclick="sendReportEmail()">✉️ Send Report</button>
-            <span class="email-status" id="email-status"></span>
-          </div>
-          <div style="font-size:0.75rem;color:#aaa;margin-top:6px;">
-            Report will be sent using your EmailJS account (template: template_mhc3xgs)
-          </div>
+        <div style="background:white;border:1px solid #ddd;border-radius:6px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="font-weight:bold;font-size:0.88rem;color:#333;">📧 Send Report via Email</div>
+          <button class="btn-email" id="send-email-btn" onclick="sendReportEmail()">✉️ Send Report</button>
+          <span class="email-status" id="email-status"></span>
         </div>
       </div>
 
@@ -887,8 +874,6 @@ function loadReport() {
 // ── Send Email via EmailJS ────────────────────────────────────
 function sendReportEmail() {
   if (!currentReportData) { toast('⚠ No report loaded. Load a report first.'); return; }
-  var email = document.getElementById('report-email').value.trim();
-  if (!email || !email.includes('@')) { toast('⚠ Enter a valid recipient email.'); return; }
 
   var res = currentReportData.results;
   var parts = currentReportData.date.split('-');
@@ -900,56 +885,40 @@ function sendReportEmail() {
   btn.textContent = '⏳ Sending...';
   statusEl.className = 'email-status';
 
-  // Build a clean text summary for the email template
-  var reportText =
-    'DATE: ' + displayDate + '\n\n' +
-    '=== A — TOTAL FACTORY ===\n' +
-    'KWH Consumption  : ' + fmt(res.kwh) + ' kWh\n' +
-    'KVAH Consumption : ' + fmt(res.kvah) + ' kVAh\n\n' +
-    '=== B — SOLAR POWER ===\n' +
-    'Solar Meter 1    : ' + fmt(res.sol1) + ' kWh\n' +
-    'Solar Meter 2    : ' + fmt(res.sol2) + ' kWh\n' +
-    'Solar Meter 3    : ' + fmt(res.sol3) + ' kWh\n' +
-    'Total Solar      : ' + fmt(res.solar) + ' kWh\n' +
-    'Solar Exported   : ' + fmt(res.solexp) + ' kWh\n' +
-    'Solar Consumed   : ' + fmt(res.solcons) + ' kWh\n\n' +
-    '=== C — MACHINES ===\n' +
-    'CRF              : ' + fmt(res.crf) + ' kWh\n' +
-    'DML              : ' + fmt(res.dml) + ' kWh\n' +
-    'Door Foaming     : ' + fmt(res.door) + ' kWh\n' +
-    'Cabinet Wet      : ' + fmt(res.cabwet) + ' kWh\n' +
-    'Cabinet Dry      : ' + fmt(res.cabdry) + ' kWh\n' +
-    'Cabinet Total    : ' + fmt(res.cabtotal) + ' kWh\n' +
-    'Pre Mix          : ' + fmt(res.premix) + ' kWh\n' +
-    'Thermoforming    : ' + fmt(res.thermo) + ' kWh\n' +
-    'Compressors      : ' + fmt(res.comp) + ' kWh\n' +
-    'Agramkow         : ' + fmt(res.agr) + ' kWh\n' +
-    'SPM Machines     : ' + fmt(res.spm) + ' kWh\n' +
-    'N2 Generator     : ' + fmt(res.n2) + ' kWh\n' +
-    'Lighting Shop    : ' + fmt(res.lighting) + ' kWh\n\n' +
-    '=== D — UTILITIES ===\n' +
-    'Chiller          : ' + fmt(res.chiller) + ' kWh\n' +
-    'AHU              : ' + fmt(res.ahu) + ' kWh\n' +
-    'STP              : ' + fmt(res.stp) + ' kWh\n' +
-    'Lighting WH      : ' + fmt(res.litwh) + ' kWh\n' +
-    'Canteen Cooler   : ' + fmt(res.canteen) + ' kWh\n' +
-    'VRF              : ' + fmt(res.vrf) + ' kWh\n' +
-    'Street Lighting  : ' + fmt(res.street) + ' kWh\n\n' +
-    '=== E — R&D LABS ===\n' +
-    'RXD              : ' + fmt(res.rxd) + ' kWh\n' +
-    'UPS              : ' + fmt(res.ups) + ' kWh\n' +
-    'R&D Total        : ' + fmt(res.rnd) + ' kWh\n\n' +
-    '=== F — OTHER LOADS ===\n' +
-    'Other Loads      : ' + fmt(res.other) + ' kWh\n';
-
   var templateParams = {
-    to_email     : email,
     report_date  : displayDate,
     total_kwh    : fmt(res.kwh),
     total_kvah   : fmt(res.kvah),
+    sol1         : fmt(res.sol1),
+    sol2         : fmt(res.sol2),
+    sol3         : fmt(res.sol3),
     total_solar  : fmt(res.solar),
+    solexp       : fmt(res.solexp),
+    solcons      : fmt(res.solcons),
+    crf          : fmt(res.crf),
+    dml          : fmt(res.dml),
+    door         : fmt(res.door),
+    cabwet       : fmt(res.cabwet),
+    cabdry       : fmt(res.cabdry),
+    cabtotal     : fmt(res.cabtotal),
+    premix       : fmt(res.premix),
+    thermo       : fmt(res.thermo),
+    comp         : fmt(res.comp),
+    agr          : fmt(res.agr),
+    spm          : fmt(res.spm),
+    n2           : fmt(res.n2),
+    lighting     : fmt(res.lighting),
+    chiller      : fmt(res.chiller),
+    ahu          : fmt(res.ahu),
+    stp          : fmt(res.stp),
+    litwh        : fmt(res.litwh),
+    canteen      : fmt(res.canteen),
+    vrf          : fmt(res.vrf),
+    street       : fmt(res.street),
+    rxd          : fmt(res.rxd),
+    ups          : fmt(res.ups),
     total_rnd    : fmt(res.rnd),
-    report_body  : reportText,
+    other        : fmt(res.other),
     from_name    : 'Liebherr Maintenance – Energy System'
   };
 
@@ -957,9 +926,9 @@ function sendReportEmail() {
     .then(function(){
       btn.disabled = false;
       btn.textContent = '✉️ Send Report';
-      statusEl.textContent = '✅ Email sent to ' + email;
+      statusEl.textContent = '✅ Email sent successfully!';
       statusEl.className = 'email-status ok';
-      toast('✅ Report emailed to ' + email);
+      toast('✅ Daily report emailed successfully!');
     }, function(err){
       btn.disabled = false;
       btn.textContent = '✉️ Send Report';
