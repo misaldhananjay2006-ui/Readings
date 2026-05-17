@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; font-size: 14px; }
 
@@ -21,30 +23,19 @@ body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; font-si
   background: white; border-radius: 12px; padding: 40px 36px;
   width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
-.login-logo {
-  text-align: center; margin-bottom: 28px;
-}
+.login-logo { text-align: center; margin-bottom: 28px; }
 .login-logo .icon { font-size: 2.8rem; display: block; margin-bottom: 8px; }
 .login-logo h2 { font-size: 1.3rem; color: #1a56a0; font-weight: 700; letter-spacing: 1px; }
 .login-logo p { font-size: 0.8rem; color: #888; margin-top: 4px; }
 .login-field { margin-bottom: 16px; }
 .login-field label { display: block; font-size: 0.8rem; font-weight: 600; color: #444; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-.login-field input {
-  width: 100%; border: 1.5px solid #ddd; border-radius: 7px;
-  padding: 10px 14px; font-size: 0.95rem; transition: border 0.2s;
-}
+.login-field input { width: 100%; border: 1.5px solid #ddd; border-radius: 7px; padding: 10px 14px; font-size: 0.95rem; transition: border 0.2s; box-sizing: border-box; }
 .login-field input:focus { outline: none; border-color: #1a56a0; }
-.login-btn {
-  width: 100%; background: linear-gradient(135deg, #1a56a0, #0d2d6e);
-  color: white; border: none; border-radius: 7px; padding: 12px;
-  font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px;
-  letter-spacing: 0.5px; transition: opacity 0.2s;
-}
+.login-btn { width: 100%; background: linear-gradient(135deg, #1a56a0, #0d2d6e); color: white; border: none; border-radius: 7px; padding: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 8px; letter-spacing: 0.5px; transition: opacity 0.2s; }
 .login-btn:hover { opacity: 0.9; }
 .login-err { color: #c0392b; font-size: 0.82rem; margin-top: 10px; text-align: center; display: none; }
 .remember-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.82rem; color: #555; }
 .remember-row input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
-.login-divider { text-align: center; color: #bbb; font-size: 0.78rem; margin: 14px 0 10px; }
 
 /* ── MAIN APP ────────────────────────────────────────────────── */
 #app-page { display: none; }
@@ -79,7 +70,7 @@ tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f7fafd; }
 .row-label { font-size: 0.85rem; }
 .row-label small { display: block; font-size: 0.7rem; color: #888; }
-input[type="number"] { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px 7px; font-size: 0.88rem; text-align: right; -moz-appearance: textfield; }
+input[type="number"] { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px 7px; font-size: 0.88rem; text-align: right; -moz-appearance: textfield; box-sizing: border-box; }
 input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 .yest-val { text-align: right; color: #555; font-size: 0.85rem; font-family: monospace; }
@@ -90,10 +81,10 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 .btn { padding: 10px 26px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
 .btn-save { background: #1a56a0; color: white; }
 .btn-save:hover { background: #144080; }
-.btn-sheets { background: #1a7a3a; color: white; }
-.btn-sheets:hover { background: #145e2d; }
 .btn-reset { background: #888; color: white; }
 .btn-reset:hover { background: #666; }
+.btn-report { background: #7b2d8b; color: white; }
+.btn-report:hover { background: #5e2069; }
 .filter-bar { padding: 10px 16px; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid #eee; flex-wrap: wrap; }
 .filter-bar label { font-size: 0.82rem; font-weight: bold; }
 .filter-bar input[type="date"] { border: 1px solid #ccc; border-radius: 4px; padding: 5px 8px; font-size: 0.82rem; }
@@ -115,6 +106,59 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 #loading.show { display: flex; }
 .spinner { background: white; padding: 20px 30px; border-radius: 8px; font-weight: bold; font-size: 1rem; }
 .no-data { text-align: center; padding: 30px; color: #888; }
+
+/* ── DAILY REPORT SECTION ──────────────────────────────────── */
+#report-view { display: none; }
+.report-header-bar {
+  background: linear-gradient(135deg, #7b2d8b, #4a1060);
+  color: white; padding: 8px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-radius: 6px 6px 0 0;
+}
+.report-header-bar h2 { font-size: 0.95rem; font-weight: bold; }
+.report-date-label { font-size: 0.8rem; opacity: 0.85; }
+
+.report-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; border: 1px solid #ccc; border-top: none; border-radius: 0 0 6px 6px; overflow: hidden;
+}
+.report-section { padding: 12px 16px; border-right: 1px solid #eee; border-bottom: 1px solid #eee; }
+.report-section:nth-child(even) { border-right: none; }
+.report-section-title { font-size: 0.75rem; font-weight: bold; color: #7b2d8b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #ede0f2; }
+.report-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 0.82rem; border-bottom: 1px dotted #f0e8f5; }
+.report-row:last-child { border-bottom: none; }
+.report-row .rlabel { color: #444; }
+.report-row .rval { font-family: monospace; font-weight: bold; color: #1a56a0; }
+.report-total-card {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, #1a56a0, #0d2d6e);
+  color: white; padding: 14px 20px;
+  display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+.report-total-item { text-align: center; }
+.report-total-item .big-val { font-size: 1.5rem; font-weight: bold; font-family: monospace; }
+.report-total-item .big-label { font-size: 0.72rem; opacity: 0.8; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+
+.report-actions { display: flex; gap: 10px; align-items: center; margin: 14px 0 4px; flex-wrap: wrap; }
+.btn-email { background: linear-gradient(135deg, #7b2d8b, #4a1060); color: white; padding: 10px 28px; font-size: 0.92rem; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; white-space: nowrap; }
+.btn-email:hover { opacity: 0.88; }
+.btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-load-report { background: linear-gradient(135deg, #7b2d8b, #4a1060); color: white; padding: 8px 20px; font-size: 0.85rem; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+.btn-load-report:hover { opacity: 0.88; }
+.report-top-bar { background: white; border: 1px solid #ccc; border-radius: 6px; padding: 10px 16px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.report-top-bar label { font-weight: bold; font-size: 0.85rem; }
+.report-top-bar input[type="date"] { border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; font-size: 0.9rem; }
+.email-status { font-size: 0.8rem; padding: 4px 10px; border-radius: 4px; display: none; }
+.email-status.ok { background: #d4edda; color: #1a7a3a; display: inline-block; }
+.email-status.err { background: #f8d7da; color: #c0392b; display: inline-block; }
+
+@media (max-width: 600px) {
+  .report-grid { grid-template-columns: 1fr; }
+  .report-section { border-right: none; }
+  .report-total-card { grid-column: 1; }
+}
+
+footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
 </style>
 </head>
 <body>
@@ -127,7 +171,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
   <div class="login-box">
     <div class="login-logo">
       <span class="icon">⚡</span>
-      <h2>Liebherr Maintenance </h2>
+      <h2>Liebherr Maintenance</h2>
       <p>Factory Energy Management System</p>
     </div>
     <div class="login-field">
@@ -168,7 +212,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
 
     <div class="view-tabs">
       <button class="tab-btn active" id="tab-entry"   onclick="showView('entry')">📝 Enter Readings</button>
-      <button class="tab-btn"        id="tab-summary" onclick="showView('summary')">📈 Daily Summary</button>
+      <button class="tab-btn"        id="tab-report"  onclick="showView('report')">📄 Daily Report</button>
       <button class="tab-btn"        id="tab-raw"     onclick="showView('raw')">📋 Raw Table</button>
       <button class="tab-btn"        id="tab-total"   onclick="showView('total')">📊 Total Table</button>
       <button class="tab-btn"        id="tab-history" onclick="showView('history')">🗂 History</button>
@@ -207,8 +251,8 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
           <tr class="total-row"><td colspan="3">Cabinet Foaming Total (Wet + Dry)</td><td><div class="result" id="r-cab-total">—</div></td></tr>
           <tr><td class="row-label">Pre Mix Area ★<small>×1000</small></td><td><input type="number" id="premix-t" oninput="calc()"></td><td><div class="yest-val" id="y-premix">—</div></td><td><div class="result" id="r-premix">—</div></td></tr>
           <tr><td class="row-label">Thermoforming Machine</td><td><input type="number" id="thermo-t" oninput="calc()"></td><td><div class="yest-val" id="y-thermo">—</div></td><td><div class="result" id="r-thermo">—</div></td></tr>
-          <tr><td class="row-label">Compressors & Dryers</td><td><input type="number" id="comp-t" oninput="calc()"></td><td><div class="yest-val" id="y-comp">—</div></td><td><div class="result" id="r-comp">—</div></td></tr>
-          <tr><td class="row-label">Agramkow & Run Test</td><td><input type="number" id="agr-t" oninput="calc()"></td><td><div class="yest-val" id="y-agr">—</div></td><td><div class="result" id="r-agr">—</div></td></tr>
+          <tr><td class="row-label">Compressors &amp; Dryers</td><td><input type="number" id="comp-t" oninput="calc()"></td><td><div class="yest-val" id="y-comp">—</div></td><td><div class="result" id="r-comp">—</div></td></tr>
+          <tr><td class="row-label">Agramkow &amp; Run Test</td><td><input type="number" id="agr-t" oninput="calc()"></td><td><div class="yest-val" id="y-agr">—</div></td><td><div class="result" id="r-agr">—</div></td></tr>
           <tr><td class="row-label">SPM Machines (DC220, TM350, TM450)</td><td><input type="number" id="spm-t" oninput="calc()"></td><td><div class="yest-val" id="y-spm">—</div></td><td><div class="result" id="r-spm">—</div></td></tr>
           <tr><td class="row-label">N2 Generator Old ★<small>×1000</small></td><td><input type="number" id="n2-t" oninput="calc()"></td><td><div class="yest-val" id="y-n2">—</div></td><td><div class="result" id="r-n2">—</div></td></tr>
           <tr class="sub-header"><td colspan="4">Lighting – Shop Floor &nbsp;<em style="font-weight:normal">(L1+L2+L3 each T−Y, ÷2)</em></td></tr>
@@ -225,7 +269,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
           <tr><td class="row-label">Chiller ★<small>×1000</small></td><td><input type="number" id="chiller-t" oninput="calc()"></td><td><div class="yest-val" id="y-chiller">—</div></td><td><div class="result" id="r-chiller">—</div></td></tr>
           <tr><td class="row-label">AHU ★<small>×1000</small></td><td><input type="number" id="ahu-t" oninput="calc()"></td><td><div class="yest-val" id="y-ahu">—</div></td><td><div class="result" id="r-ahu">—</div></td></tr>
           <tr><td class="row-label">STP ★<small>×1000</small></td><td><input type="number" id="stp-t" oninput="calc()"></td><td><div class="yest-val" id="y-stp">—</div></td><td><div class="result" id="r-stp">—</div></td></tr>
-          <tr><td class="row-label">Lighting – Warehouse, Stores, CB, SB & Canteen</td><td><input type="number" id="litwh-t" oninput="calc()"></td><td><div class="yest-val" id="y-litwh">—</div></td><td><div class="result" id="r-litwh">—</div></td></tr>
+          <tr><td class="row-label">Lighting – Warehouse, Stores, CB, SB &amp; Canteen</td><td><input type="number" id="litwh-t" oninput="calc()"></td><td><div class="yest-val" id="y-litwh">—</div></td><td><div class="result" id="r-litwh">—</div></td></tr>
           <tr><td class="row-label">Canteen Cooler ★<small>×1000</small></td><td><input type="number" id="canteen-t" oninput="calc()"></td><td><div class="yest-val" id="y-canteen">—</div></td><td><div class="result" id="r-canteen">—</div></td></tr>
           <tr><td class="row-label">VRF ★<small>×1000</small></td><td><input type="number" id="vrf-t" oninput="calc()"></td><td><div class="yest-val" id="y-vrf">—</div></td><td><div class="result" id="r-vrf">—</div></td></tr>
           <tr class="sub-header"><td colspan="4">Street Lighting &nbsp;<em style="font-weight:normal">(FP1+FP2+FP3 sum)</em></td></tr>
@@ -237,77 +281,129 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
       </div>
 
       <div class="card">
-        <div class="card-header"><h2>E — R&D Labs</h2><span class="formula">(T−Y) × 1000 each, then RXD+UPS</span></div>
+        <div class="card-header"><h2>E — R&amp;D Labs</h2><span class="formula">(T−Y) × 1000 each, then RXD+UPS</span></div>
         <table><tr><th>Reading</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
           <tr><td class="row-label">RXD ★<small>×1000</small></td><td><input type="number" id="rxd-t" oninput="calc()"></td><td><div class="yest-val" id="y-rxd">—</div></td><td><div class="result" id="r-rxd">—</div></td></tr>
           <tr><td class="row-label">UPS ★<small>×1000</small></td><td><input type="number" id="ups-t" oninput="calc()"></td><td><div class="yest-val" id="y-ups">—</div></td><td><div class="result" id="r-ups">—</div></td></tr>
-          <tr class="total-row"><td colspan="3">R&D Total (RXD + UPS)</td><td><div class="result" id="r-rnd">—</div></td></tr>
+          <tr class="total-row"><td colspan="3">R&amp;D Total (RXD + UPS)</td><td><div class="result" id="r-rnd">—</div></td></tr>
         </table>
       </div>
 
       <div class="card">
         <div class="card-header"><h2>F — Other Loads</h2><span class="formula">T−Y</span></div>
         <table><tr><th>Area</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
-          <tr><td class="row-label">Warehouse Office, Server 1&2, WTP, Pumphouse, Security, Dock & Shutters</td><td><input type="number" id="other-t" oninput="calc()"></td><td><div class="yest-val" id="y-other">—</div></td><td><div class="result" id="r-other">—</div></td></tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><h2>G — Floor AC Readings</h2><span class="formula">T−Y each</span></div>
-        <table><tr><th>Area</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
-          <tr><td class="row-label">1st Floor AC</td><td><input type="number" id="ac1-t" oninput="calc()"></td><td><div class="yest-val" id="y-ac1">—</div></td><td><div class="result" id="r-ac1">—</div></td></tr>
-          <tr><td class="row-label">2nd Floor AC</td><td><input type="number" id="ac2-t" oninput="calc()"></td><td><div class="yest-val" id="y-ac2">—</div></td><td><div class="result" id="r-ac2">—</div></td></tr>
+          <tr><td class="row-label">Warehouse Office, Server 1&amp;2, WTP, Pumphouse, Security, Dock &amp; Shutters</td><td><input type="number" id="other-t" oninput="calc()"></td><td><div class="yest-val" id="y-other">—</div></td><td><div class="result" id="r-other">—</div></td></tr>
         </table>
       </div>
 
       <div class="action-row">
-        <button class="btn btn-reset"  onclick="resetForm()">🔄 Reset</button>
-        <button class="btn btn-save"   onclick="saveAll()">💾 Save</button>
+        <button class="btn btn-reset" onclick="resetForm()">🔄 Reset</button>
+        <button class="btn btn-save"  onclick="saveAll()">💾 Save</button>
+        <button class="btn btn-report" onclick="showView('report')">📄 View Daily Report</button>
       </div>
     </div>
 
-    <!-- DAILY SUMMARY -->
-    <div id="summary-view" style="display:none;">
-      <div class="card">
-        <div class="card-header">
-          <h2>📈 Daily Energy Summary Report</h2>
-          <span class="formula">MTD resets automatically each month</span>
-        </div>
-        <div class="filter-bar" style="justify-content:space-between;flex-wrap:wrap;">
-          <div style="display:flex;gap:10px;align-items:center;">
-            <label>Month:</label>
-            <input type="month" id="summary-month" style="border:1px solid #ccc;border-radius:4px;padding:5px 8px;font-size:0.82rem;">
-            <button onclick="loadSummary()">Load</button>
+    <!-- ═══════ DAILY REPORT VIEW ═══════ -->
+    <div id="report-view">
+      <div class="report-top-bar">
+        <label>Report Date:</label>
+        <input type="date" id="report-date">
+        <button class="btn-load-report" onclick="loadReport()">📄 Load Report</button>
+        <span id="report-load-status" style="font-size:0.8rem;color:#888;"></span>
+      </div>
+
+      <!-- Report card -->
+      <div id="report-card" style="display:none;">
+        <div style="background:white;border:1px solid #ccc;border-radius:6px;overflow:hidden;margin-bottom:14px;">
+          <div class="report-header-bar">
+            <h2>⚡ Daily Energy Report — Liebherr Maintenance</h2>
+            <span class="report-date-label" id="report-display-date"></span>
           </div>
-          <div style="font-size:0.82rem;color:#444;">PF = <strong id="summary-pf" style="color:#1a56a0;">—</strong></div>
+
+          <!-- Highlight totals -->
+          <div class="report-total-card">
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-kwh">—</div>
+              <div class="big-label">Total KWH</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-kvah">—</div>
+              <div class="big-label">Total KVAH</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-solar">—</div>
+              <div class="big-label">Solar Generated (kWh)</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-rnd">—</div>
+              <div class="big-label">R&amp;D Total (kWh)</div>
+            </div>
+          </div>
+
+          <div class="report-grid">
+            <!-- Solar -->
+            <div class="report-section">
+              <div class="report-section-title">☀️ B — Solar Power</div>
+              <div class="report-row"><span class="rlabel">Solar Meter 1</span><span class="rval" id="rpt-sol1">—</span></div>
+              <div class="report-row"><span class="rlabel">Solar Meter 2</span><span class="rval" id="rpt-sol2">—</span></div>
+              <div class="report-row"><span class="rlabel">Solar Meter 3</span><span class="rval" id="rpt-sol3">—</span></div>
+              <div class="report-row" style="font-weight:bold;color:#7b2d8b;"><span class="rlabel">Total Solar</span><span class="rval" id="rpt-solar2">—</span></div>
+              <div class="report-row"><span class="rlabel">Exported</span><span class="rval" id="rpt-solexp">—</span></div>
+              <div class="report-row"><span class="rlabel">Consumed</span><span class="rval" id="rpt-solcons">—</span></div>
+            </div>
+
+            <!-- Machines -->
+            <div class="report-section">
+              <div class="report-section-title">⚙️ C — Machines</div>
+              <div class="report-row"><span class="rlabel">CRF</span><span class="rval" id="rpt-crf">—</span></div>
+              <div class="report-row"><span class="rlabel">DML</span><span class="rval" id="rpt-dml">—</span></div>
+              <div class="report-row"><span class="rlabel">Door Foaming</span><span class="rval" id="rpt-door">—</span></div>
+              <div class="report-row"><span class="rlabel">Cabinet Wet</span><span class="rval" id="rpt-cabwet">—</span></div>
+              <div class="report-row"><span class="rlabel">Cabinet Dry</span><span class="rval" id="rpt-cabdry">—</span></div>
+              <div class="report-row" style="font-weight:bold;"><span class="rlabel">Cabinet Total</span><span class="rval" id="rpt-cabtotal">—</span></div>
+              <div class="report-row"><span class="rlabel">Pre Mix</span><span class="rval" id="rpt-premix">—</span></div>
+              <div class="report-row"><span class="rlabel">Thermoforming</span><span class="rval" id="rpt-thermo">—</span></div>
+              <div class="report-row"><span class="rlabel">Compressors</span><span class="rval" id="rpt-comp">—</span></div>
+              <div class="report-row"><span class="rlabel">Agramkow</span><span class="rval" id="rpt-agr">—</span></div>
+              <div class="report-row"><span class="rlabel">SPM Machines</span><span class="rval" id="rpt-spm">—</span></div>
+              <div class="report-row"><span class="rlabel">N2 Generator</span><span class="rval" id="rpt-n2">—</span></div>
+              <div class="report-row"><span class="rlabel">Lighting Shop Floor</span><span class="rval" id="rpt-lighting">—</span></div>
+            </div>
+
+            <!-- Utilities -->
+            <div class="report-section">
+              <div class="report-section-title">🏭 D — Utilities</div>
+              <div class="report-row"><span class="rlabel">Chiller</span><span class="rval" id="rpt-chiller">—</span></div>
+              <div class="report-row"><span class="rlabel">AHU</span><span class="rval" id="rpt-ahu">—</span></div>
+              <div class="report-row"><span class="rlabel">STP</span><span class="rval" id="rpt-stp">—</span></div>
+              <div class="report-row"><span class="rlabel">Lighting WH/Stores</span><span class="rval" id="rpt-litwh">—</span></div>
+              <div class="report-row"><span class="rlabel">Canteen Cooler</span><span class="rval" id="rpt-canteen">—</span></div>
+              <div class="report-row"><span class="rlabel">VRF</span><span class="rval" id="rpt-vrf">—</span></div>
+              <div class="report-row"><span class="rlabel">Street Lighting</span><span class="rval" id="rpt-street">—</span></div>
+            </div>
+
+            <!-- R&D & Other -->
+            <div class="report-section">
+              <div class="report-section-title">🔬 E — R&amp;D Labs &amp; Other</div>
+              <div class="report-row"><span class="rlabel">RXD</span><span class="rval" id="rpt-rxd">—</span></div>
+              <div class="report-row"><span class="rlabel">UPS</span><span class="rval" id="rpt-ups">—</span></div>
+              <div class="report-row" style="font-weight:bold;"><span class="rlabel">R&amp;D Total</span><span class="rval" id="rpt-rnd2">—</span></div>
+              <div class="report-section-title" style="margin-top:10px;">📦 F — Other Loads</div>
+              <div class="report-row"><span class="rlabel">Other Loads</span><span class="rval" id="rpt-other">—</span></div>
+            </div>
+          </div>
         </div>
-        <div style="padding:8px 16px;background:#fffbe6;border-bottom:1px solid #eee;font-size:0.8rem;color:#666;">
-          <strong>Observations:</strong>&nbsp;
-          1. Cabinet, Door, CRF &amp; DML — Two shifts 06:30 AM to 11:30 PM &nbsp;|&nbsp;
-          2. AHU &amp; Chiller — 09:15 AM to 06:00 PM &nbsp;|&nbsp;
-          3. Thermoforming — Three shifts 06:30 AM to 06:30 AM
+
+        <!-- Email send section -->
+        <div style="background:white;border:1px solid #ddd;border-radius:6px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="font-weight:bold;font-size:0.88rem;color:#333;">📧 Send Report via Email</div>
+          <button class="btn-email" id="send-email-btn" onclick="sendReportEmail()">✉️ Send Report</button>
+          <span class="email-status" id="email-status"></span>
         </div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-            <thead>
-              <tr style="background:#1a56a0;color:white;">
-                <th style="padding:8px 10px;text-align:left;white-space:nowrap;">Date</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Machine<br>kWh</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Utility<br>kWh</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Compressor<br>kWh</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">R&amp;D Lab<br>kWh</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">AHU</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Chiller</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">1st Floor<br>AC</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">2nd Floor<br>AC</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Total<br>kWh/day</th>
-                <th style="padding:8px 10px;text-align:right;white-space:nowrap;">Total till<br>date (MTD)</th>
-              </tr>
-            </thead>
-            <tbody id="summary-body"></tbody>
-            <tfoot id="summary-foot"></tfoot>
-          </table>
-        </div>
+      </div>
+
+      <div id="report-no-data" style="display:none;text-align:center;padding:40px;color:#888;background:white;border:1px solid #ccc;border-radius:6px;">
+        📭 No data found for the selected date. Please select a date with saved readings.
       </div>
     </div>
 
@@ -351,7 +447,7 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
         </div>
         <div style="overflow-x:auto;">
           <table class="hist-table">
-            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&D</th><th>Other</th><th>Del</th></tr></thead>
+            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&amp;D</th><th>Other</th><th>Del</th></tr></thead>
             <tbody id="history-body"></tbody>
           </table>
         </div>
@@ -359,21 +455,28 @@ input[type="number"]:focus { outline: none; border-color: #1a56a0; }
     </div>
   </div>
 </div>
+
 <footer>Dhananjay Misal</footer>
-<!-- Firebase already loaded in head -->
 
 <script>
-// ── Config ────────────────────────────────────────────────────
-(function(){
-var _k=["AIzaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ","liebherr\x2Dmaintenance\x2Efirebaseapp\x2Ecom","liebherr\x2Dmaintenance","liebherr\x2Dmaintenance\x2Efirebasestorage\x2Eapp","111977658931","1\x3A111977658931\x3Aweb\x3A25f4ac43224b3d7c2c8146"];
-var _u=["AKfycbziay22bU\x2D6W6iSTIN58dfvTd6pnPY8WCNyew\x2DehBL_imueHuNJdrPe33kyyrRq0cw_pg"];
-firebase.initializeApp({apiKey:_k[0],authDomain:_k[1],projectId:_k[2],storageBucket:_k[3],messagingSenderId:_k[4],appId:_k[5]});
-window._SU='https://scr\x69pt.goog\x6Ce.com/mac\x72os/s/'+_u[0]+'/exec';
-})();
+// ── Firebase Init ─────────────────────────────────────────────
+firebase.initializeApp({
+  apiKey: "AIzaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ",
+  authDomain: "liebherr-maintenance.firebaseapp.com",
+  projectId: "liebherr-maintenance",
+  storageBucket: "liebherr-maintenance.firebasestorage.app",
+  messagingSenderId: "111977658931",
+  appId: "1:111977658931:web:25f4ac43224b3d7c2c8146"
+});
 const db   = firebase.firestore();
 const auth = firebase.auth();
 
-const SCRIPT_URL = window._SU;
+// ── EmailJS Init ──────────────────────────────────────────────
+emailjs.init('8-fbJXXpxM0uhcPo4');
+const EMAILJS_SERVICE  = 'service_w6aoixu';   // Service ID
+const EMAILJS_TEMPLATE = 'template_mhc3xgs';  // Template ID
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziay22bU-6W6iSTIN58dfvTd6pnPY8WCNyew-ehBL_imueHuNJdrPe33kyyrRq0cw_pg/exec";
 const SHEET_NAME = "Reading";
 const LS_KEY = "powerReadings_session";
 
@@ -394,7 +497,6 @@ const FIELDS = [
   ['canteen','Canteen Cooler',1000],['vrf','VRF',1000],
   ['fp1','Street FP1',1],['fp2','Street FP2',1],['fp3','Street FP3',1],
   ['rxd','RXD',1000],['ups','UPS',1000],['other','Other Loads',1],
-  ['ac1','1st Floor AC',1],['ac2','2nd Floor AC',1],
 ];
 
 const TOTAL_LABELS = [
@@ -410,12 +512,11 @@ const TOTAL_LABELS = [
   ['canteen','Canteen Cooler'],['vrf','VRF'],
   ['street','Street Lighting'],
   ['rxd','RXD'],['ups','UPS'],['rnd','R&D Total'],['other','Other Loads'],
-  ['ac1','1st Floor AC'],['ac2','2nd Floor AC'],
-  ['machineKwh','Machine Total'],['utilKwh','Utility Total'],
 ];
 
 let yest = {};
 let allRecords = [];
+let currentReportData = null;
 
 // ── Helpers ───────────────────────────────────────────────────
 function v(id) {
@@ -434,6 +535,10 @@ function toast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg; t.style.display = 'block';
   clearTimeout(t._t); t._t = setTimeout(function(){ t.style.display='none'; }, 3500);
+}
+function fmt(val) {
+  if (val === undefined || val === null) return '—';
+  return Number(val).toFixed(2);
 }
 
 // ── Calc ──────────────────────────────────────────────────────
@@ -474,8 +579,6 @@ function calc() {
   var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
   setR('rxd',rxd); setR('ups',ups); setR('rnd', rxd+ups);
   setR('other', v('other')-y('other'));
-  setR('ac1', v('ac1')-y('ac1'));
-  setR('ac2', v('ac2')-y('ac2'));
 }
 
 function getResults() {
@@ -484,17 +587,10 @@ function getResults() {
   var fp1=v('fp1')-y('fp1'), fp2=v('fp2')-y('fp2'), fp3=v('fp3')-y('fp3');
   var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
   var cabwet=v('cab-wet')-y('cab-wet'), cabdry=v('cab-dry')-y('cab-dry');
-  var ac1=v('ac1')-y('ac1'), ac2=v('ac2')-y('ac2');
-  var machineKwh=(v('crf')-y('crf'))+(v('dml')-y('dml'))+(v('door')-y('door'))*1000
-    +cabwet+cabdry+(v('premix')-y('premix'))*1000+(v('thermo')-y('thermo'))
-    +(v('comp')-y('comp'))+(v('agr')-y('agr'))+(v('spm')-y('spm'))
-    +(v('n2')-y('n2'))*1000+(l1+l2+l3)/2;
-  var utilKwh=(v('chiller')-y('chiller'))*1000+(v('ahu')-y('ahu'))*1000
-    +(v('stp')-y('stp'))*1000+(v('litwh')-y('litwh'))+(v('canteen')-y('canteen'))*1000
-    +(v('vrf')-y('vrf'))*1000+(fp1+fp2+fp3);
   return {
     kwh:(v('kwh')-y('kwh'))*30, kvah:(v('kvah')-y('kvah'))*30,
-    solar:s1+s2+s3, solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
+    solar:s1+s2+s3, sol1:s1, sol2:s2, sol3:s3,
+    solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
     crf:v('crf')-y('crf'), dml:v('dml')-y('dml'),
     door:(v('door')-y('door'))*1000,
     cabwet:cabwet, cabdry:cabdry, cabtotal:cabwet+cabdry,
@@ -510,10 +606,7 @@ function getResults() {
     vrf:(v('vrf')-y('vrf'))*1000,
     street:fp1+fp2+fp3,
     rxd:rxd, ups:ups, rnd:rxd+ups,
-    other:v('other')-y('other'),
-    ac1:ac1, ac2:ac2,
-    machineKwh:machineKwh, utilKwh:utilKwh,
-    totalDay:machineKwh+utilKwh+(rxd+ups)+(v('other')-y('other'))
+    other:v('other')-y('other')
   };
 }
 
@@ -526,17 +619,11 @@ function doLogin() {
   if (!email||!pass) { errEl.textContent='Please enter email and password.'; errEl.style.display='block'; return; }
   errEl.style.display='none';
   showLoading(true);
-
-  var persistence = remember
-    ? firebase.auth.Auth.Persistence.LOCAL
-    : firebase.auth.Auth.Persistence.SESSION;
-
+  var persistence = remember ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
   auth.setPersistence(persistence).then(function(){
     return auth.signInWithEmailAndPassword(email, pass);
   }).then(function(cred){
-    if (remember) {
-      localStorage.setItem(LS_KEY, JSON.stringify({ email: cred.user.email, uid: cred.user.uid }));
-    }
+    if (remember) localStorage.setItem(LS_KEY, JSON.stringify({ email: cred.user.email, uid: cred.user.uid }));
     showLoading(false);
     showApp(cred.user.email);
   }).catch(function(e){
@@ -561,8 +648,7 @@ function showApp(email) {
   document.getElementById('app-page').style.display='block';
   document.getElementById('user-email-display').textContent = email;
   document.getElementById('entry-date').valueAsDate = new Date();
-  var now=new Date();
-  document.getElementById('summary-month').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('report-date').valueAsDate = new Date();
   setDefaultRange('raw'); setDefaultRange('total'); setDefaultRange('hist');
   loadAllData();
 }
@@ -596,7 +682,7 @@ function fetchYesterday() {
   }).catch(function(e){ status.textContent='❌ '+e.message; status.className='err'; });
 }
 
-// ── Save to BOTH Firebase and Sheets ─────────────────────────
+// ── Save to Firebase and Sheets ───────────────────────────────
 function saveAll() {
   var date = document.getElementById('entry-date').value;
   if (!date) { toast('⚠ Select a date first!'); return; }
@@ -605,11 +691,9 @@ function saveAll() {
   FIELDS.forEach(function(f){ raw[f[0]] = v(f[0]); });
   var res = getResults();
 
-  // 1. Save to Firebase
   db.collection('powerReadings').doc(date).set({
     date:date, raw:raw, results:res, savedAt:new Date().toISOString()
   }).then(function(){
-    // 2. Submit to Sheets after Firebase succeeds
     var payload = {action:'append', sheet:SHEET_NAME, date:date};
     FIELDS.forEach(function(f){ payload['today_'+f[0]] = v(f[0]); });
     payload.res_kwh=res.kwh; payload.res_kvah=res.kvah;
@@ -625,9 +709,6 @@ function saveAll() {
     payload.res_street=res.street;
     payload.res_rxd=res.rxd; payload.res_ups=res.ups; payload.res_rnd=res.rnd;
     payload.res_other=res.other;
-    payload.res_ac1=res.ac1; payload.res_ac2=res.ac2;
-    payload.res_machineKwh=res.machineKwh; payload.res_utilKwh=res.utilKwh;
-    payload.res_totalDay=res.totalDay;
     var params = new URLSearchParams(payload).toString();
     return fetch(SCRIPT_URL+'?'+params);
   }).then(function(r){ return r ? r.text() : ''; })
@@ -728,79 +809,150 @@ function renderHistory(records) {
   }).join('');
 }
 
+// ── DAILY REPORT ──────────────────────────────────────────────
+function loadReport() {
+  var dateVal = document.getElementById('report-date').value;
+  var status = document.getElementById('report-load-status');
+  if (!dateVal) { status.textContent = '⚠ Select a date first.'; return; }
+  status.textContent = '⏳ Loading...';
+  document.getElementById('report-card').style.display='none';
+  document.getElementById('report-no-data').style.display='none';
+  document.getElementById('email-status').className='email-status';
+
+  db.collection('powerReadings').doc(dateVal).get().then(function(snap){
+    if (!snap.exists) {
+      status.textContent='';
+      document.getElementById('report-no-data').style.display='block';
+      currentReportData = null;
+      return;
+    }
+    var data = snap.data();
+    var res = data.results || {};
+    currentReportData = { date: dateVal, results: res };
+
+    // Format display date
+    var parts = dateVal.split('-');
+    var displayDate = parts[2]+'/'+parts[1]+'/'+parts[0];
+    document.getElementById('report-display-date').textContent = '📅 ' + displayDate;
+
+    // Helper
+    function rSet(id, key) {
+      var el = document.getElementById('rpt-'+id);
+      if (el) el.textContent = fmt(res[key]);
+    }
+
+    // Totals banner
+    document.getElementById('rpt-kwh').textContent   = fmt(res.kwh);
+    document.getElementById('rpt-kvah').textContent  = fmt(res.kvah);
+    document.getElementById('rpt-solar').textContent = fmt(res.solar);
+    document.getElementById('rpt-rnd').textContent   = fmt(res.rnd);
+
+    // Solar section
+    rSet('sol1','sol1'); rSet('sol2','sol2'); rSet('sol3','sol3');
+    rSet('solar2','solar'); rSet('solexp','solexp'); rSet('solcons','solcons');
+
+    // Machines section
+    rSet('crf','crf'); rSet('dml','dml'); rSet('door','door');
+    rSet('cabwet','cabwet'); rSet('cabdry','cabdry'); rSet('cabtotal','cabtotal');
+    rSet('premix','premix'); rSet('thermo','thermo'); rSet('comp','comp');
+    rSet('agr','agr'); rSet('spm','spm'); rSet('n2','n2'); rSet('lighting','lighting');
+
+    // Utilities section
+    rSet('chiller','chiller'); rSet('ahu','ahu'); rSet('stp','stp');
+    rSet('litwh','litwh'); rSet('canteen','canteen'); rSet('vrf','vrf'); rSet('street','street');
+
+    // R&D & Other
+    rSet('rxd','rxd'); rSet('ups','ups'); rSet('rnd2','rnd'); rSet('other','other');
+
+    status.textContent='✅ Report loaded for '+displayDate;
+    document.getElementById('report-card').style.display='block';
+  }).catch(function(e){
+    status.textContent='❌ '+e.message;
+  });
+}
+
+// ── Send Email via EmailJS ────────────────────────────────────
+function sendReportEmail() {
+  if (!currentReportData) { toast('⚠ No report loaded. Load a report first.'); return; }
+
+  var res = currentReportData.results;
+  var parts = currentReportData.date.split('-');
+  var displayDate = parts[2]+'/'+parts[1]+'/'+parts[0];
+
+  var btn = document.getElementById('send-email-btn');
+  var statusEl = document.getElementById('email-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending...';
+  statusEl.className = 'email-status';
+
+  var templateParams = {
+    report_date  : displayDate,
+    total_kwh    : fmt(res.kwh),
+    total_kvah   : fmt(res.kvah),
+    sol1         : fmt(res.sol1),
+    sol2         : fmt(res.sol2),
+    sol3         : fmt(res.sol3),
+    total_solar  : fmt(res.solar),
+    solexp       : fmt(res.solexp),
+    solcons      : fmt(res.solcons),
+    crf          : fmt(res.crf),
+    dml          : fmt(res.dml),
+    door         : fmt(res.door),
+    cabwet       : fmt(res.cabwet),
+    cabdry       : fmt(res.cabdry),
+    cabtotal     : fmt(res.cabtotal),
+    premix       : fmt(res.premix),
+    thermo       : fmt(res.thermo),
+    comp         : fmt(res.comp),
+    agr          : fmt(res.agr),
+    spm          : fmt(res.spm),
+    n2           : fmt(res.n2),
+    lighting     : fmt(res.lighting),
+    chiller      : fmt(res.chiller),
+    ahu          : fmt(res.ahu),
+    stp          : fmt(res.stp),
+    litwh        : fmt(res.litwh),
+    canteen      : fmt(res.canteen),
+    vrf          : fmt(res.vrf),
+    street       : fmt(res.street),
+    rxd          : fmt(res.rxd),
+    ups          : fmt(res.ups),
+    total_rnd    : fmt(res.rnd),
+    other        : fmt(res.other),
+    from_name    : 'Liebherr Maintenance – Energy System'
+  };
+
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, templateParams)
+    .then(function(){
+      btn.disabled = false;
+      btn.textContent = '✉️ Send Report';
+      statusEl.textContent = '✅ Email sent successfully!';
+      statusEl.className = 'email-status ok';
+      toast('✅ Daily report emailed successfully!');
+    }, function(err){
+      btn.disabled = false;
+      btn.textContent = '✉️ Send Report';
+      statusEl.textContent = '❌ Failed: ' + (err.text || JSON.stringify(err));
+      statusEl.className = 'email-status err';
+      toast('❌ Email failed. Check console.');
+      console.error('EmailJS error:', err);
+    });
+}
+
 function showView(view) {
-  ['entry','summary','raw','total','history'].forEach(function(vw){
+  ['entry','report','raw','total','history'].forEach(function(vw){
     document.getElementById(vw+'-view').style.display=(vw===view)?'block':'none';
-    document.getElementById('tab-'+vw).classList.toggle('active',vw===view);
+    var tab = document.getElementById('tab-'+vw);
+    if(tab) tab.classList.toggle('active',vw===view);
   });
   if(view==='raw'||view==='total'||view==='history') loadAllData();
-  if(view==='summary') loadSummary();
-}
-
-// ── Daily Summary ─────────────────────────────────────────────
-function loadSummary() {
-  var m = document.getElementById('summary-month').value;
-  if (!m) return;
-  var parts=m.split('-'), yr=parseInt(parts[0]), mo=parseInt(parts[1]);
-  var from=yr+'-'+String(mo).padStart(2,'0')+'-01';
-  var lastDay=new Date(yr,mo,0).getDate();
-  var to=yr+'-'+String(mo).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
-  db.collection('powerReadings')
-    .where('date','>=',from).where('date','<=',to)
-    .orderBy('date','asc').get()
-    .then(function(snap){
-      var recs=[]; snap.forEach(function(d){recs.push(d.data());}); renderSummary(recs);
-    }).catch(function(e){console.error(e);});
-}
-
-function renderSummary(records) {
-  var tbody=document.getElementById('summary-body');
-  var tfoot=document.getElementById('summary-foot');
-  if (!records.length) {
-    tbody.innerHTML='<tr><td colspan="11" style="text-align:center;padding:20px;color:#888;">No data for this month</td></tr>';
-    tfoot.innerHTML=''; return;
+  if(view==='report') {
+    // Auto-load today's report
+    var rd = document.getElementById('report-date');
+    if(!rd.value) rd.valueAsDate = new Date();
+    loadReport();
   }
-  function g(res,k){return(res&&res[k]!==undefined)?Number(res[k]):0;}
-  var tot={machine:0,util:0,comp:0,rnd:0,ahu:0,chiller:0,ac1:0,ac2:0,total:0};
-  var mtd=0, rows='';
-  records.forEach(function(r,i){
-    var res=r.results||{};
-    var machine=g(res,'machineKwh'), util=g(res,'utilKwh');
-    var comp=g(res,'comp'), rnd=g(res,'rnd');
-    var ahu=g(res,'ahu'), chiller=g(res,'chiller');
-    var ac1=g(res,'ac1'), ac2=g(res,'ac2');
-    var totalDay=g(res,'totalDay')||machine+util+rnd+g(res,'other');
-    mtd+=totalDay;
-    tot.machine+=machine; tot.util+=util; tot.comp+=comp; tot.rnd+=rnd;
-    tot.ahu+=ahu; tot.chiller+=chiller; tot.ac1+=ac1; tot.ac2+=ac2; tot.total+=totalDay;
-    var bg=i%2===0?'#fff':'#f7fafd';
-    rows+='<tr style="background:'+bg+';">'
-      +'<td style="padding:6px 10px;font-weight:500;white-space:nowrap;">'+r.date+'</td>'
-      +sc(machine)+sc(util)+sc(comp)+sc(rnd)+sc(ahu)+sc(chiller)+sc(ac1)+sc(ac2)+sc(totalDay)
-      +'<td style="padding:6px 10px;text-align:right;font-weight:bold;color:#1a56a0;">'+Math.round(mtd).toLocaleString()+'</td>'
-      +'</tr>';
-  });
-  tbody.innerHTML=rows;
-  var n=records.length;
-  function avg(x){return n>0?Math.round(x/n):0;}
-  var lr=records[records.length-1].results||{};
-  var kwh=g(lr,'kwh'),kvah=g(lr,'kvah');
-  document.getElementById('summary-pf').textContent=kvah>0?(kwh/kvah).toFixed(3):'—';
-  tfoot.innerHTML=
-    '<tr style="background:#e8eef5;font-weight:bold;color:#1a56a0;">'
-    +'<td style="padding:6px 10px;">Avg / Day</td>'
-    +sc(avg(tot.machine))+sc(avg(tot.util))+sc(avg(tot.comp))+sc(avg(tot.rnd))
-    +sc(avg(tot.ahu))+sc(avg(tot.chiller))+sc(avg(tot.ac1))+sc(avg(tot.ac2))
-    +sc(avg(tot.total))
-    +'<td style="padding:6px 10px;text-align:right;">----</td></tr>'
-    +'<tr style="background:#1a56a0;color:white;font-weight:bold;">'
-    +'<td style="padding:6px 10px;">MTD Total</td>'
-    +sm(tot.machine)+sm(tot.util)+sm(tot.comp)+sm(tot.rnd)
-    +sm(tot.ahu)+sm(tot.chiller)+sm(tot.ac1)+sm(tot.ac2)+sm(tot.total)
-    +'<td style="padding:6px 10px;text-align:right;">'+Math.round(tot.total).toLocaleString()+'</td></tr>';
 }
-function sc(v){return'<td style="padding:6px 10px;text-align:right;">'+Math.round(v).toLocaleString()+'</td>';}
-function sm(v){return'<td style="padding:6px 10px;text-align:right;color:white;">'+Math.round(v).toLocaleString()+'</td>';}
 
 function resetForm() {
   if(!confirm('Clear all today\'s readings?')) return;
@@ -820,13 +972,12 @@ function setDefaultRange(prefix) {
   document.getElementById(prefix+'-to').value=to.toISOString().split('T')[0];
 }
 
-// ── Auth state listener — auto login if session persists ──────
+// ── Auth state listener ───────────────────────────────────────
 window.onload = function() {
   setInterval(function(){
     var cl = document.getElementById('clock');
     if(cl) cl.textContent=new Date().toLocaleTimeString('en-IN');
   },1000);
-
   auth.onAuthStateChanged(function(user) {
     showLoading(false);
     if (user) {
