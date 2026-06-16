@@ -263,6 +263,7 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
       <label>Date:</label>
       <input type="date" id="entry-date">
       <button onclick="fetchYesterday()">↓ Load Yesterday</button>
+      <button onclick="fetchToday()" style="background:#c27a00;">↺ Load Today</button>
       <span id="fetch-status">Select date then load yesterday's readings.</span>
     </div>
 
@@ -752,7 +753,36 @@ function fetchYesterday() {
   }).catch(function(e){ status.textContent='❌ '+e.message; status.className='err'; });
 }
 
-// ── Save to Firebase and Sheets ───────────────────────────────
+// ── Load Today (resume partial entry) ────────────────────────
+function fetchToday() {
+  var status = document.getElementById('fetch-status');
+  var dateVal = document.getElementById('entry-date').value;
+  if (!dateVal) { status.textContent='⚠ Select a date first.'; return; }
+  status.textContent='⏳ Loading today\'s saved readings...'; status.className='';
+  db.collection('powerReadings').doc(dateVal).get().then(function(snap) {
+    if (!snap.exists || !snap.data().raw) {
+      status.textContent='⚠ No saved data for today ('+dateVal+'). Nothing to load.';
+      status.className='err'; return;
+    }
+    var raw = snap.data().raw;
+    var filled = 0;
+    FIELDS.forEach(function(f) {
+      var id = f[0];
+      var val = raw[id];
+      var el = document.getElementById(id+'-t');
+      if (el && val !== undefined && val !== '') {
+        el.value = val;
+        filled++;
+      }
+    });
+    calc();
+    status.textContent = '✅ Today\'s readings loaded ('+filled+' fields restored) — '+dateVal;
+    status.className = 'ok';
+    toast('✅ Resumed: '+filled+' fields loaded from today\'s earlier save.');
+  }).catch(function(e){ status.textContent='❌ '+e.message; status.className='err'; });
+}
+
+
 function saveAll() {
   var date = document.getElementById('entry-date').value;
   if (!date) { toast('⚠ Select a date first!'); return; }
