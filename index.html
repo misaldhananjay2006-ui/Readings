@@ -392,8 +392,16 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
               <div class="big-label">Solar Generated (kWh)</div>
             </div>
             <div class="report-total-item">
-              <div class="big-val" id="rpt-rnd">—</div>
-              <div class="big-label">R&amp;D Total (kWh)</div>
+              <div class="big-val" id="rpt-total-machine">—</div>
+              <div class="big-label">Total Machine (kWh)</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-total-utility">—</div>
+              <div class="big-label">Total Utility (kWh)</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-others">—</div>
+              <div class="big-label">Others (kWh)</div>
             </div>
           </div>
 
@@ -667,6 +675,14 @@ function getResults() {
     rxd:rxd, ups:ups, rnd:rxd+ups,
     other:v('other')-y('other')
   };
+  var kwh = res.kwh;
+  res.totalMachine = res.crf + res.dml + res.door + res.cabtotal +
+                     res.premix + res.thermo + res.comp + res.agr +
+                     res.spm + res.n2 + res.lighting;
+  res.totalUtility = res.chiller + res.ahu + res.stp + res.litwh +
+                     res.canteen + res.vrf + res.street;
+  res.others = kwh - res.totalMachine - res.totalUtility;
+  return res;
 }
 
 // ── LOGIN / LOGOUT ────────────────────────────────────────────
@@ -947,7 +963,17 @@ function loadReport() {
     document.getElementById('rpt-kwh').textContent   = fmt(res.kwh);
     document.getElementById('rpt-kvah').textContent  = fmt(res.kvah);
     document.getElementById('rpt-solar').textContent = fmt(res.solar);
-    document.getElementById('rpt-rnd').textContent   = fmt(res.rnd);
+
+    // Compute derived totals from stored results
+    var totalMachine = (res.crf||0) + (res.dml||0) + (res.door||0) + (res.cabtotal||0) +
+                       (res.premix||0) + (res.thermo||0) + (res.comp||0) + (res.agr||0) +
+                       (res.spm||0) + (res.n2||0) + (res.lighting||0);
+    var totalUtility = (res.chiller||0) + (res.ahu||0) + (res.stp||0) + (res.litwh||0) +
+                       (res.canteen||0) + (res.vrf||0) + (res.street||0);
+    var others = (res.kwh||0) - totalMachine - totalUtility;
+    document.getElementById('rpt-total-machine').textContent = fmt(totalMachine);
+    document.getElementById('rpt-total-utility').textContent = fmt(totalUtility);
+    document.getElementById('rpt-others').textContent        = fmt(others);
 
     // Solar section
     rSet('sol1','sol1'); rSet('sol2','sol2'); rSet('sol3','sol3');
