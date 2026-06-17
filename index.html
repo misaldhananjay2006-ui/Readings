@@ -300,7 +300,8 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
       <div class="card">
         <div class="card-header"><h2>C — Machines</h2><span class="formula">T−Y (★=×1000)</span></div>
         <table><tr><th>Machine</th><th>Today</th><th>Yesterday</th><th>kWh</th></tr>
-          <tr><td class="row-label">KCM Thermoforming</td><td><input type="number" id="crf-t" oninput="calc()"></td><td><div class="yest-val" id="y-crf">—</div></td><td><div class="result" id="r-crf">—</div></td></tr>
+          <tr><td class="row-label">CRF Reading</td><td><input type="number" id="crf-read-t" oninput="calc()"></td><td><div class="yest-val" id="y-crf-read">—</div></td><td><div class="result" id="r-crf-read">—</div></td></tr>
+          <tr><td class="row-label">KCM Thermoforming</td><td><input type="number" id="kcm-thermo-t" oninput="calc()"></td><td><div class="yest-val" id="y-kcm-thermo">—</div></td><td><div class="result" id="r-kcm-thermo">—</div></td></tr>
           <tr><td class="row-label">DML</td><td><input type="number" id="dml-t" oninput="calc()"></td><td><div class="yest-val" id="y-dml">—</div></td><td><div class="result" id="r-dml">—</div></td></tr>
           <tr><td class="row-label">Door Foaming Machine ★<small>×1000</small></td><td><input type="number" id="door-t" oninput="calc()"></td><td><div class="yest-val" id="y-door">—</div></td><td><div class="result" id="r-door">—</div></td></tr>
           <tr><td class="row-label">Cabinet Foaming — Wet</td><td><input type="number" id="cab-wet-t" oninput="calc()"></td><td><div class="yest-val" id="y-cab-wet">—</div></td><td><div class="result" id="r-cab-wet">—</div></td></tr>
@@ -381,19 +382,31 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
           <div class="report-total-card">
             <div class="report-total-item">
               <div class="big-val" id="rpt-kwh">—</div>
-              <div class="big-label">Total KWH</div>
+              <div class="big-label">KWH</div>
             </div>
             <div class="report-total-item">
               <div class="big-val" id="rpt-kvah">—</div>
-              <div class="big-label">Total KVAH</div>
+              <div class="big-label">KVAH</div>
             </div>
             <div class="report-total-item">
               <div class="big-val" id="rpt-solar">—</div>
-              <div class="big-label">Solar Generated (kWh)</div>
+              <div class="big-label">Solar</div>
             </div>
             <div class="report-total-item">
-              <div class="big-val" id="rpt-rnd">—</div>
-              <div class="big-label">R&amp;D Total (kWh)</div>
+              <div class="big-val" id="rpt-total-machine">—</div>
+              <div class="big-label">Total Machine</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-total-utility">—</div>
+              <div class="big-label">Total Utility</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-others">—</div>
+              <div class="big-label">Others</div>
+            </div>
+            <div class="report-total-item">
+              <div class="big-val" id="rpt-total-factory-cons">—</div>
+              <div class="big-label">Total Factory Consumption</div>
             </div>
           </div>
 
@@ -410,10 +423,11 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
             </div>
 
             <!-- Machines -->
-            <div class="report-section">
-              <div class="report-section-title">⚙️ C — Machines</div>
-              <div class="report-row"><span class="rlabel">KCM Thermoforming</span><span class="rval" id="rpt-crf">—</span></div>
-              <div class="report-row"><span class="rlabel">DML</span><span class="rval" id="rpt-dml">—</span></div>
+    <div class="report-section">
+      <div class="report-section-title">⚙️ C — Machines</div>
+      <div class="report-row"><span class="rlabel">CRF Reading</span><span class="rval" id="rpt-crf">—</span></div>
+      <div class="report-row"><span class="rlabel">KCM Thermoforming</span><span class="rval" id="rpt-kcm-thermo">—</span></div>
+      <div class="report-row"><span class="rlabel">DML</span><span class="rval" id="rpt-dml">—</span></div>
               <div class="report-row"><span class="rlabel">Door Foaming</span><span class="rval" id="rpt-door">—</span></div>
               <div class="report-row"><span class="rlabel">Cabinet Wet</span><span class="rval" id="rpt-cabwet">—</span></div>
               <div class="report-row"><span class="rlabel">Cabinet Dry</span><span class="rval" id="rpt-cabdry">—</span></div>
@@ -504,7 +518,7 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
         </div>
         <div style="overflow-x:auto;">
           <table class="hist-table">
-            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>KCM Thermoforming</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>RXD</th><th>UPS</th><th>R&amp;D</th><th>Other</th><th>Del</th></tr></thead>
+            <thead><tr><th>Date</th><th>KWH</th><th>KVAH</th><th>Solar</th><th>CRF</th><th>KCM</th><th>DML</th><th>Door</th><th>Cab Wet</th><th>Cab Dry</th><th>Cab Total</th><th>PreMix</th><th>Thermo</th><th>Comp</th><th>Agr</th><th>SPM</th><th>N2</th><th>Light SF</th><th>Total Machine</th><th>Chiller</th><th>AHU</th><th>STP</th><th>Lit WH</th><th>Canteen</th><th>VRF</th><th>Street</th><th>Total Utility</th><th>Others</th><th>Total Factory Consumption</th><th>Del</th></tr></thead>
             <tbody id="history-body"></tbody>
           </table>
         </div>
@@ -542,10 +556,13 @@ const FIELDS = [
   ['kwh','KWH',30],['kvah','KVAH',30],
   ['sol1','Solar Meter 1',6],['sol2','Solar Meter 2',6],['sol3','Solar Meter 3',6],
   ['solexp','Solar Exported',1],['solcons','Solar Consumed',1],
-  ['crf','KCM Thermoforming',1],['dml','DML',1],
+  ['crf-read','CRF Reading',1],
+  ['kcm-thermo','KCM Thermoforming',1],
+  ['dml','DML',1],
   ['door','Door Foaming',1000],
   ['cab-wet','Cabinet Wet',1],['cab-dry','Cabinet Dry',1],
-  ['premix','Pre Mix',1000],['thermo','Thermoforming',1],
+  ['premix','Pre Mix',1000],
+  ['thermo','Thermoforming',1],
   ['comp','Compressors',1],['agr','Agramkow',1],['spm','SPM',1],
   ['n2','N2 Generator',1000],
   ['l1','Light L1',1],['l2','Light L2',1],['l3','Light L3',1],
@@ -557,18 +574,16 @@ const FIELDS = [
 ];
 
 const TOTAL_LABELS = [
-  ['kwh','KWH (×30)'],['kvah','KVAH (×30)'],
-  ['solar','Solar Total'],['solexp','Solar Exported'],['solcons','Solar Consumed'],
-  ['crf','KCM Thermoforming'],['dml','DML'],['door','Door Foaming'],
-  ['cabwet','Cabinet Wet'],['cabdry','Cabinet Dry'],['cabtotal','Cabinet Total'],
-  ['premix','Pre Mix'],['thermo','Thermoforming'],['comp','Compressors'],
-  ['agr','Agramkow'],['spm','SPM'],['n2','N2 Generator'],
-  ['lighting','Lighting Shop Floor'],
-  ['chiller','Chiller'],['ahu','AHU'],['stp','STP'],
-  ['litwh','Lighting WH'],
-  ['canteen','Canteen Cooler'],['vrf','VRF'],
-  ['street','Street Lighting'],
-  ['rxd','RXD'],['ups','UPS'],['rnd','R&D Total'],['other','Other Loads'],
+  ['kwh','KWH'], ['kvah','KVAH'], ['solar','Solar'],
+  ['crf-read','CRF'], ['kcm-thermo','KCM'], ['dml','DML'], ['door','Door'],
+  ['cabwet','Cab Wet'], ['cabdry','Cab Dry'], ['cabtotal','Cab Total'],
+  ['premix','PreMix'], ['thermo','Thermo'], ['comp','Comp'], ['agr','Agr'],
+  ['spm','SPM'], ['n2','N2'], ['lighting','Light SF'],
+  ['total-machine','Total Machine'],
+  ['chiller','Chiller'], ['ahu','AHU'], ['stp','STP'], ['litwh','Lit WH'],
+  ['canteen','Canteen'], ['vrf','VRF'], ['street','Street'],
+  ['total-utility','Total Utility'],
+  ['others','Others'], ['total-factory-cons','Total Factory Consumption']
 ];
 
 let yest = {};
@@ -577,7 +592,7 @@ let currentReportData = null;
 
 // ── Helpers ───────────────────────────────────────────────────
 function v(id) {
-  var el = document.getElementById(id+'-t');
+  var el = document.getElementById(id+'-t') || document.getElementById(id);
   if (!el) return 0;
   var val = parseFloat(el.value);
   return isNaN(val) ? 0 : val;
@@ -600,43 +615,83 @@ function fmt(val) {
 
 // ── Calc ──────────────────────────────────────────────────────
 function calc() {
-  setR('kwh',  (v('kwh') -y('kwh')) *30);
-  setR('kvah', (v('kvah')-y('kvah'))*30);
+  var kwh = (v('kwh') - y('kwh')) * 30;
+  var kvah = (v('kvah') - y('kvah')) * 30;
+  setR('kwh', kwh);
+  setR('kvah', kvah);
   var s1=(v('sol1')-y('sol1'))*6, s2=(v('sol2')-y('sol2'))*6, s3=(v('sol3')-y('sol3'))*6;
+  var solarTotal = s1+s2+s3;
   setR('sol1',s1); setR('sol2',s2); setR('sol3',s3);
-  setR('solar-total', s1+s2+s3);
+  setR('solar-total', solarTotal);
   setR('solexp',  v('solexp') -y('solexp'));
   setR('solcons', v('solcons')-y('solcons'));
-  setR('crf',  v('crf') -y('crf'));
-  setR('dml',  v('dml') -y('dml'));
-  setR('door', (v('door')-y('door'))*1000);
+  
+  var crfRead = v('crf-read'); // CRF Reading is filled value only
+  setR('crf-read', crfRead);
+  var kcmThermo = v('kcm-thermo') - y('kcm-thermo');
+  setR('kcm-thermo', kcmThermo);
+  var dml = v('dml') - y('dml');
+  setR('dml', dml);
+  var door = (v('door')-y('door'))*1000;
+  setR('door', door);
   var cabwet = v('cab-wet')-y('cab-wet');
   var cabdry = v('cab-dry')-y('cab-dry');
   setR('cab-wet', cabwet);
   setR('cab-dry', cabdry);
-  setR('cab-total', cabwet + cabdry);
-  setR('premix',  (v('premix')-y('premix'))*1000);
-  setR('thermo',  v('thermo') -y('thermo'));
-  setR('comp',    v('comp')   -y('comp'));
-  setR('agr',     v('agr')    -y('agr'));
-  setR('spm',     v('spm')    -y('spm'));
-  setR('n2',     (v('n2')     -y('n2'))*1000);
+  var cabtotal = cabwet + cabdry;
+  setR('cab-total', cabtotal);
+  var premix = (v('premix')-y('premix'))*1000;
+  setR('premix', premix);
+  var thermo = v('thermo') - y('thermo');
+  setR('thermo', thermo);
+  var comp = v('comp') - y('comp');
+  setR('comp', comp);
+  var agr = v('agr') - y('agr');
+  setR('agr', agr);
+  var spm = v('spm') - y('spm');
+  setR('spm', spm);
+  var n2 = (v('n2') - y('n2'))*1000;
+  setR('n2', n2);
   var l1=v('l1')-y('l1'), l2=v('l2')-y('l2'), l3=v('l3')-y('l3');
   setR('l1',l1); setR('l2',l2); setR('l3',l3);
   var lightingTotal = (l1+l2+l3)/2;
   setR('lighting', lightingTotal);
-  setR('litwh', lightingTotal);
-  setR('chiller', (v('chiller')-y('chiller'))*1000);
-  setR('ahu',     (v('ahu')   -y('ahu'))   *1000);
-  setR('stp',     (v('stp')   -y('stp'))   *1000);
-  setR('litwh', lightingTotal);
-  setR('canteen', (v('canteen')-y('canteen'))*1000);
-  setR('vrf',     (v('vrf')   -y('vrf'))   *1000);
+
+  var totalMachine = parseFloat(crfRead) + kcmThermo + dml + door + cabtotal + premix + thermo + comp + agr + spm + n2 + lightingTotal;
+  setR('total-machine', totalMachine);
+
+  var chiller = (v('chiller')-y('chiller'))*1000;
+  var ahu = (v('ahu')-y('ahu'))*1000;
+  var stp = (v('stp')-y('stp'))*1000;
+  var litwh = (l1+l2+l3)/2;
+  var canteen = (v('canteen')-y('canteen'))*1000;
+  var vrf = (v('vrf')-y('vrf'))*1000;
   var fp1=v('fp1')-y('fp1'), fp2=v('fp2')-y('fp2'), fp3=v('fp3')-y('fp3');
+  var street = fp1+fp2+fp3;
+  setR('chiller', chiller);
+  setR('ahu', ahu);
+  setR('stp', stp);
+  setR('litwh', litwh);
+  setR('canteen', canteen);
+  setR('vrf', vrf);
   setR('fp1',fp1); setR('fp2',fp2); setR('fp3',fp3);
-  setR('street', fp1+fp2+fp3);
-  var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
-  setR('rxd',rxd); setR('ups',ups); setR('rnd', rxd+ups);
+  setR('street', street);
+
+  var totalUtility = chiller + ahu + stp + litwh + canteen + vrf + street;
+  setR('total-utility', totalUtility);
+
+  var rxd = (v('rxd')-y('rxd'))*1000;
+  var ups = (v('ups')-y('ups'))*1000;
+  setR('rxd', rxd);
+  setR('ups', ups);
+  setR('rnd', rxd + ups);
+
+  var totalFactoryCons = kwh + solarTotal;
+  setR('total-factory-cons', totalFactoryCons);
+
+  var others = totalFactoryCons - (totalMachine + totalUtility + rxd);
+  setR('others', others);
+  
   setR('other', v('other')-y('other'));
 }
 
@@ -646,25 +701,48 @@ function getResults() {
   var fp1=v('fp1')-y('fp1'), fp2=v('fp2')-y('fp2'), fp3=v('fp3')-y('fp3');
   var rxd=(v('rxd')-y('rxd'))*1000, ups=(v('ups')-y('ups'))*1000;
   var cabwet=v('cab-wet')-y('cab-wet'), cabdry=v('cab-dry')-y('cab-dry');
+  
+  var kwh = (v('kwh')-y('kwh'))*30;
+  var solarTotal = s1+s2+s3;
+  var crfRead = v('crf-read');
+  var kcmThermo = v('kcm-thermo')-y('kcm-thermo');
+  var dml = v('dml')-y('dml');
+  var door = (v('door')-y('door'))*1000;
+  var cabtotal = cabwet + cabdry;
+  var premix = (v('premix')-y('premix'))*1000;
+  var thermo = v('thermo')-y('thermo');
+  var comp = v('comp')-y('comp');
+  var agr = v('agr')-y('agr');
+  var spm = v('spm')-y('spm');
+  var n2 = (v('n2')-y('n2'))*1000;
+  var lighting = (l1+l2+l3)/2;
+  
+  var totalMachine = parseFloat(crfRead) + kcmThermo + dml + door + cabtotal + premix + thermo + comp + agr + spm + n2 + lighting;
+  
+  var chiller = (v('chiller')-y('chiller'))*1000;
+  var ahu = (v('ahu')-y('ahu'))*1000;
+  var stp = (v('stp')-y('stp'))*1000;
+  var litwh = (l1+l2+l3)/2;
+  var canteen = (v('canteen')-y('canteen'))*1000;
+  var vrf = (v('vrf')-y('vrf'))*1000;
+  var street = fp1+fp2+fp3;
+  
+  var totalUtility = chiller + ahu + stp + litwh + canteen + vrf + street;
+  var totalFactoryCons = kwh + solarTotal;
+  var others = totalFactoryCons - (totalMachine + totalUtility + rxd);
+
   return {
-    kwh:(v('kwh')-y('kwh'))*30, kvah:(v('kvah')-y('kvah'))*30,
-    solar:s1+s2+s3, sol1:s1, sol2:s2, sol3:s3,
+    kwh: kwh, kvah: (v('kvah')-y('kvah'))*30,
+    solar: solarTotal, sol1:s1, sol2:s2, sol3:s3,
     solexp:v('solexp')-y('solexp'), solcons:v('solcons')-y('solcons'),
-    crf:v('crf')-y('crf'), dml:v('dml')-y('dml'),
-    door:(v('door')-y('door'))*1000,
-    cabwet:cabwet, cabdry:cabdry, cabtotal:cabwet+cabdry,
-    premix:(v('premix')-y('premix'))*1000,
-    thermo:v('thermo')-y('thermo'), comp:v('comp')-y('comp'),
-    agr:v('agr')-y('agr'), spm:v('spm')-y('spm'),
-    n2:(v('n2')-y('n2'))*1000,
-    lighting:(l1+l2+l3)/2,
-    chiller:(v('chiller')-y('chiller'))*1000,
-    ahu:(v('ahu')-y('ahu'))*1000, stp:(v('stp')-y('stp'))*1000,
-    litwh:(l1+l2+l3)/2,
-    canteen:(v('canteen')-y('canteen'))*1000,
-    vrf:(v('vrf')-y('vrf'))*1000,
-    street:fp1+fp2+fp3,
+    'crf-read': crfRead, 'kcm-thermo': kcmThermo, dml:dml,
+    door:door, cabwet:cabwet, cabdry:cabdry, cabtotal:cabtotal,
+    premix:premix, thermo:thermo, comp:comp, agr:agr, spm:spm, n2:n2,
+    lighting:lighting, chiller:chiller, ahu:ahu, stp:stp, litwh:litwh,
+    canteen:canteen, vrf:vrf, street:street,
     rxd:rxd, ups:ups, rnd:rxd+ups,
+    'total-machine': totalMachine, 'total-utility': totalUtility,
+    'total-factory-cons': totalFactoryCons, others: others,
     other:v('other')-y('other')
   };
 }
@@ -745,6 +823,10 @@ function fetchYesterday() {
     FIELDS.forEach(function(f) {
       var id = f[0];
       var raw = data.raw ? data.raw[id] : undefined;
+      // Fallback for KCM Thermoforming legacy key 'crf'
+      if (id === 'kcm-thermo' && raw === undefined && data.raw && data.raw['crf'] !== undefined) {
+        raw = data.raw['crf'];
+      }
       var val = (raw!==undefined&&raw!=='') ? parseFloat(raw) : 0;
       yest[id] = isNaN(val) ? 0 : val;
       var el = document.getElementById('y-'+id);
@@ -800,7 +882,7 @@ function saveAll() {
     FIELDS.forEach(function(f){ payload['today_'+f[0]] = v(f[0]); });
     payload.res_kwh=res.kwh; payload.res_kvah=res.kvah;
     payload.res_solar_total=res.solar; payload.res_solexp=res.solexp; payload.res_solcons=res.solcons;
-    payload.res_crf=res.crf; payload.res_dml=res.dml; payload.res_door=res.door;
+    payload.res_crf_read=res['crf-read']; payload.res_kcm_thermo=res['kcm-thermo']; payload.res_dml=res.dml; payload.res_door=res.door;
     payload.res_cab_wet=res.cabwet; payload.res_cab_dry=res.cabdry; payload.res_cab_total=res.cabtotal;
     payload.res_premix=res.premix; payload.res_thermo=res.thermo; payload.res_comp=res.comp;
     payload.res_agr=res.agr; payload.res_spm=res.spm; payload.res_n2=res.n2;
@@ -810,6 +892,8 @@ function saveAll() {
     payload.res_canteen=res.canteen; payload.res_vrf=res.vrf;
     payload.res_street=res.street;
     payload.res_rxd=res.rxd; payload.res_ups=res.ups; payload.res_rnd=res.rnd;
+    payload.res_total_machine=res['total-machine']; payload.res_total_utility=res['total-utility'];
+    payload.res_others=res.others; payload.res_total_factory_cons=res['total-factory-cons'];
     payload.res_other=res.other;
     var params = new URLSearchParams(payload).toString();
     return fetch(SCRIPT_URL+'?'+params);
@@ -893,20 +977,21 @@ function renderTotalTable(records) {
 
 function renderHistory(records) {
   var body=document.getElementById('history-body');
-  if(!records.length){body.innerHTML='<tr><td colspan="29" class="no-data">No records found</td></tr>';return;}
+  if(!records.length){body.innerHTML='<tr><td colspan="30" class="no-data">No records found</td></tr>';return;}
   body.innerHTML=records.map(function(r){
     var res=r.results||{};
     function f(k){return res[k]!==undefined?Number(res[k]).toFixed(0):'—';}
     return'<tr><td><strong>'+r.date+'</strong></td>'
       +'<td>'+f('kwh')+'</td><td>'+f('kvah')+'</td><td>'+f('solar')+'</td>'
-      +'<td>'+f('crf')+'</td><td>'+f('dml')+'</td><td>'+f('door')+'</td>'
-      +'<td>'+f('cabwet')+'</td><td>'+f('cabdry')+'</td><td>'+f('cabtotal')+'</td>'
-      +'<td>'+f('premix')+'</td><td>'+f('thermo')+'</td><td>'+f('comp')+'</td>'
-      +'<td>'+f('agr')+'</td><td>'+f('spm')+'</td><td>'+f('n2')+'</td>'
-      +'<td>'+f('lighting')+'</td><td>'+f('chiller')+'</td><td>'+f('ahu')+'</td>'
-      +'<td>'+f('stp')+'</td><td>'+f('litwh')+'</td>'
-      +'<td>'+f('canteen')+'</td><td>'+f('vrf')+'</td><td>'+f('street')+'</td>'
-      +'<td>'+f('rxd')+'</td><td>'+f('ups')+'</td><td>'+f('rnd')+'</td><td>'+f('other')+'</td>'
+      +'<td>'+f('crf-read')+'</td><td>'+f('kcm-thermo')+'</td><td>'+f('dml')+'</td>'
+      +'<td>'+f('door')+'</td><td>'+f('cabwet')+'</td><td>'+f('cabdry')+'</td><td>'+f('cabtotal')+'</td>'
+      +'<td>'+f('premix')+'</td><td>'+f('thermo')+'</td><td>'+f('comp')+'</td><td>'+f('agr')+'</td>'
+      +'<td>'+f('spm')+'</td><td>'+f('n2')+'</td><td>'+f('lighting')+'</td>'
+      +'<td><strong>'+f('total-machine')+'</strong></td>'
+      +'<td>'+f('chiller')+'</td><td>'+f('ahu')+'</td><td>'+f('stp')+'</td>'
+      +'<td>'+f('litwh')+'</td><td>'+f('canteen')+'</td><td>'+f('vrf')+'</td><td>'+f('street')+'</td>'
+      +'<td><strong>'+f('total-utility')+'</strong></td>'
+      +'<td>'+f('others')+'</td><td>'+f('total-factory-cons')+'</td>'
       +'<td><button class="del-btn" onclick="deleteRecord(\''+r.date+'\')">Delete</button></td></tr>';
   }).join('');
 }
@@ -947,14 +1032,17 @@ function loadReport() {
     document.getElementById('rpt-kwh').textContent   = fmt(res.kwh);
     document.getElementById('rpt-kvah').textContent  = fmt(res.kvah);
     document.getElementById('rpt-solar').textContent = fmt(res.solar);
-    document.getElementById('rpt-rnd').textContent   = fmt(res.rnd);
+    document.getElementById('rpt-total-machine').textContent = fmt(res['total-machine']);
+    document.getElementById('rpt-total-utility').textContent = fmt(res['total-utility']);
+    document.getElementById('rpt-others').textContent = fmt(res.others);
+    document.getElementById('rpt-total-factory-cons').textContent = fmt(res['total-factory-cons']);
 
     // Solar section
     rSet('sol1','sol1'); rSet('sol2','sol2'); rSet('sol3','sol3');
     rSet('solar2','solar'); rSet('solexp','solexp'); rSet('solcons','solcons');
 
     // Machines section
-    rSet('crf','crf'); rSet('dml','dml'); rSet('door','door');
+    rSet('crf','crf-read'); rSet('kcm-thermo','kcm-thermo'); rSet('dml','dml'); rSet('door','door');
     rSet('cabwet','cabwet'); rSet('cabdry','cabdry'); rSet('cabtotal','cabtotal');
     rSet('premix','premix'); rSet('thermo','thermo'); rSet('comp','comp');
     rSet('agr','agr'); rSet('spm','spm'); rSet('n2','n2'); rSet('lighting','lighting');
@@ -997,7 +1085,8 @@ function sendReportEmail() {
     total_solar  : fmt(res.solar),
     solexp       : fmt(res.solexp),
     solcons      : fmt(res.solcons),
-    crf          : fmt(res.crf),
+    crf_read     : fmt(res['crf-read']),
+    kcm_thermo   : fmt(res['kcm-thermo']),
     dml          : fmt(res.dml),
     door         : fmt(res.door),
     cabwet       : fmt(res.cabwet),
@@ -1021,6 +1110,10 @@ function sendReportEmail() {
     ups          : fmt(res.ups),
     total_rnd    : fmt(res.rnd),
     other        : fmt(res.other),
+    total_machine: fmt(res['total-machine']),
+    total_utility: fmt(res['total-utility']),
+    others       : fmt(res.others),
+    total_factory_cons: fmt(res['total-factory-cons']),
     from_name    : 'Liebherr Maintenance – Energy System'
   };
 
@@ -1093,4 +1186,3 @@ window.onload = function() {
 </script>
 </body>
 </html>
-
