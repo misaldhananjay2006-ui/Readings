@@ -463,7 +463,53 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
               <div class="report-row"><span class="rlabel">Other Loads</span><span class="rval" id="rpt-other">—</span></div>
             </div>
           </div>
-        </div>
+        
+<!-- Monthly Summary Box -->
+<div style="background:white;border:1px solid #000;margin-top:20px;overflow-x:auto;">
+<table style="width:100%;border-collapse:collapse;text-align:center;font-size:14px;">
+<thead><tr style="background:#f5f5f5;font-weight:bold;">
+<th style="border:1px solid #000;padding:8px;">Date</th>
+<th style="border:1px solid #000;padding:8px;">Machine KWH</th>
+<th style="border:1px solid #000;padding:8px;">Utility KWH</th>
+<th style="border:1px solid #000;padding:8px;">Compressor KWH</th>
+<th style="border:1px solid #000;padding:8px;">R&D Lab KWH</th>
+<th style="border:1px solid #000;padding:8px;">AHU</th>
+<th style="border:1px solid #000;padding:8px;">Chiller</th>
+<th style="border:1px solid #000;padding:8px;">1ST Floor AC</th>
+<th style="border:1px solid #000;padding:8px;">2ND Floor AC</th>
+<th style="border:1px solid #000;padding:8px;">Total KWH/day</th>
+<th style="border:1px solid #000;padding:8px;">Total till date</th>
+</tr></thead>
+<tbody>
+<tr>
+<td id="sum-date"></td>
+<td id="sum-machine"></td>
+<td id="sum-utility"></td>
+<td id="sum-compressor"></td>
+<td id="sum-rnd"></td>
+<td id="sum-ahu"></td>
+<td id="sum-chiller"></td>
+<td id="sum-ac1"></td>
+<td id="sum-ac2"></td>
+<td id="sum-total-day"></td>
+<td id="sum-total-till-date"></td>
+</tr>
+
+<tr>
+<td><b>AVG</b></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table></div>
+</div>
 
         <!-- Email send section -->
         <div style="background:white;border:1px solid #ddd;border-radius:6px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
@@ -1053,6 +1099,61 @@ function loadReport() {
 
     // R&D & Other
     rSet('rxd','rxd'); rSet('ups','ups'); rSet('rnd2','rnd'); rSet('other','other');
+    // SUMMARY BOX
+
+let machine = Number(res['total-machine'] || 0);
+let utility = Number(res['total-utility'] || 0);
+let compressor = Number(res.comp || 0);
+let rnd = Number(res.rnd || 0);
+let ahu = Number(res.ahu || 0);
+let chiller = Number(res.chiller || 0);
+let vrf = Number(res.vrf || 0);
+
+let ac1 = vrf / 2;
+let ac2 = vrf / 2;
+
+// Total KWH/day = Today's KWH
+let totalDay = Number(res.kwh || 0);
+
+document.getElementById('sum-date').textContent = displayDate;
+document.getElementById('sum-machine').textContent = fmt(machine);
+document.getElementById('sum-utility').textContent = fmt(utility);
+document.getElementById('sum-compressor').textContent = fmt(compressor);
+document.getElementById('sum-rnd').textContent = fmt(rnd);
+document.getElementById('sum-ahu').textContent = fmt(ahu);
+document.getElementById('sum-chiller').textContent = fmt(chiller);
+document.getElementById('sum-ac1').textContent = fmt(ac1);
+document.getElementById('sum-ac2').textContent = fmt(ac2);
+document.getElementById('sum-total-day').textContent = fmt(totalDay);
+
+let monthStart = dateVal.substring(0,7) + '-01';
+
+let d = new Date(dateVal);
+let monthEnd = new Date(
+  d.getFullYear(),
+  d.getMonth() + 1,
+  0
+);
+
+let monthEndStr = monthEnd.toISOString().split('T')[0];
+
+db.collection('powerReadings')
+.where('date', '>=', monthStart)
+.where('date', '<=', monthEndStr)
+.get()
+.then(function(snapshot){
+
+  let totalTillDate = 0;
+
+  snapshot.forEach(function(doc){
+    let r = doc.data().results || {};
+    totalTillDate += Number(r.kwh || 0);
+  });
+
+  document.getElementById('sum-total-till-date').textContent =
+    fmt(totalTillDate);
+
+});
 
     status.textContent='✅ Report loaded for '+displayDate;
     document.getElementById('report-card').style.display='block';
