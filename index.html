@@ -768,7 +768,7 @@ function getResults() {
   
   var totalUtility = chiller + ahu + stp + litwh + canteen + vrf + street;
   var totalFactoryCons = kwh + solarTotal;
-  var others = totalFactoryCons - (totalMachine + totalUtility + rxd);
+  var others = totalFactoryCons - (totalMachine + totalUtility + rxd + ups );
 
   return {
     kwh: kwh, kvah: (v('kvah')-y('kvah'))*30,
