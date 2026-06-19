@@ -728,7 +728,7 @@ function calc() {
   var totalFactoryCons = kwh + solarTotal;
   setR('total-factory-cons', totalFactoryCons);
 
-  var others = totalFactoryCons - (totalMachine + totalUtility + rxd);
+  var others = totalFactoryCons - (totalMachine + totalUtility + rxd + ups );
   setR('others', others);
   
   setR('other', v('other')-y('other'));
