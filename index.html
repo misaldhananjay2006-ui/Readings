@@ -12,6 +12,32 @@
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #edf7f6; color: #222; font-size: 14px; }
+  <!-- MAINTENANCE MODE -->
+<div id="maintenance-mode" style="
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0f172a;
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:999999;
+font-family:Arial,sans-serif;
+text-align:center;
+padding:20px;
+">
+  <div>
+    <h1 style="font-size:42px;margin-bottom:15px;">🚧 Website Temporarily Unavailable</h1>
+    <p style="font-size:20px;margin-bottom:10px;">
+      Daily Power Readings System is currently under maintenance.
+    <p style="margin-top:20px;color:#94a3b8;">
+      Will be Started As Soon As Possible 
+    </p>
+  </div>
+</div>
 
 /* ── LOGIN PAGE ─────────────────────────────────────────────── */
 #login-page {
@@ -570,7 +596,26 @@ footer { text-align: center; padding: 10px; font-size: 0.78rem; color: #aaa; }
 
 <script>
 // ── Firebase Init ─────────────────────────────────────────────
-firebase.initializeApp({
+document.body.innerHTML = `
+<div style="
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#0f172a;
+color:white;
+font-family:Arial;
+text-align:center;
+">
+  <div>
+    <h1>🚧 Website Temporarily Down</h1>
+    <h3>Due To Maintenance Activity</h3>
+    <p>Please Try Again Later</p>
+  </div>
+</div>
+`;
+throw new Error("Maintenance Mode");
+  firebase.initializeApp({
   apiKey: "AIzaSyA928WTL1TGpsGeL0_vyf3uCycW6BL_hwQ",
   authDomain: "liebherr-maintenance.firebaseapp.com",
   projectId: "liebherr-maintenance",
